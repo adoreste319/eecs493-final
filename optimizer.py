@@ -37,7 +37,7 @@ class DF:
             if ft > 0:
                 countft += 1
                 
-            values[i] = (df.at[i, 'PTS'] + ((sum_pts/sum_3)*df.at[i, '3P']) + ((sum_pts/sum_reb)*df.at[i, 'TRB']) + ((sum_pts/sum_ast)*df.at[i, 'AST']) + ((sum_pts/sum_stl)*df.at[i, 'STL']) + ((sum_pts/sum_blk)*df.at[i, 'BLK']))
+            values[i] = (df.at[i, 'PTS'] + ((sum_pts/sum_3)*df.at[i, '3P']) + ((sum_pts/sum_reb)*df.at[i, 'TRB']) + ((sum_pts/sum_ast)*df.at[i, 'AST']) + ((sum_pts/sum_stl)*df.at[i, 'STL']) + ((sum_pts/sum_blk)*df.at[i, 'BLK']) + ((sum_pts/250)*fg) + ((sum_pts/283)*ft))
 
         df['VALUE'] = values
         df = df.sort_values(by='VALUE', ascending=False).reset_index(drop=True)
