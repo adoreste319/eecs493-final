@@ -27,21 +27,21 @@ class DF:
         std_fg = df['FG%'].std(skipna=True)
         std_ft = df['FT%'].std(skipna=True)
         values = [0] * 530
-        countfg = 0
-        countft = 0
+        #countfg = 0
+        #countft = 0
         for i in range(len(df)):
             fg = ((df.at[i, 'FG%'] - mean_fg)/std_fg)
             ft = ((df.at[i, 'FT%'] - mean_ft)/std_ft)
-            if fg > 0:
+            """if fg > 0:
                 countfg += 1
             if ft > 0:
-                countft += 1
+                countft += 1"""
                 
             values[i] = (df.at[i, 'PTS'] + ((sum_pts/sum_3)*df.at[i, '3P']) + ((sum_pts/sum_reb)*df.at[i, 'TRB']) + ((sum_pts/sum_ast)*df.at[i, 'AST']) + ((sum_pts/sum_stl)*df.at[i, 'STL']) + ((sum_pts/sum_blk)*df.at[i, 'BLK']) + ((sum_pts/250)*fg) + ((sum_pts/283)*ft))
 
         df['VALUE'] = values
         df = df.sort_values(by='VALUE', ascending=False).reset_index(drop=True)
-        print(countfg, countft)
+        
         return df
     
     def remove_duplicates(self, df, data):
@@ -212,25 +212,26 @@ class Pick:
     name = ""
     viability = { }
     row_num = -1
+    adv_row = -1
     row = []
     
-    def __init__(self, index, benchmarks, std_devs):
-        self.row = df.iloc[index]
-        self.name = self.row[2]
+    def __init__(self, df, index, benchmarks, std_devs):
+        self.row = df.avg.iloc[index]
+        self.name = self.row['PLAYER']
         self.row_num = index
         
         #set viability
-        self.viability["fg%"] = (self.row[13] - benchmarks["fg%"])/std_devs["fg%"]
-        self.viability["ft%"] = (self.row[15] - benchmarks["ft%"])/std_devs["ft%"]
-        self.viability["3/g"] = (self.row[8] - benchmarks["3/g"])/std_devs["3/g"]
-        self.viability["p/g"] = (self.row[7] - benchmarks["p/g"])/std_devs["p/g"]
-        self.viability["r/g"] = (self.row[9] - benchmarks["r/g"])/std_devs["r/g"]
-        self.viability["a/g"] = (self.row[10] - benchmarks["a/g"])/std_devs["a/g"]
-        self.viability["s/g"] = (self.row[11] - benchmarks["s/g"])/std_devs["s/g"]
-        self.viability["b/g"] = (self.row[12] - benchmarks["b/g"])/std_devs["b/g"]
-        self.viability["to/g"] = (self.row[17] - benchmarks["to/g"])/std_devs["to/g"]
-        self.viability["m/g"] = (self.row[6] - benchmarks["m/g"])/std_devs["m/g"]
-        self.viability["USG"] = (self.row[18] - benchmarks["USG"])/std_devs["USG"]
+        self.viability["FG%"] = (self.row["FG%"] - benchmarks["FG%"])/std_devs["FG%"]
+        self.viability["FT%"] = (self.row['FT%'] - benchmarks["FT%"])/std_devs["FT%"]
+        self.viability["3P"] = (self.row['3P'] - benchmarks["3P"])/std_devs["3P"]
+        self.viability["PTS"] = (self.row['PTS'] - benchmarks["PTS"])/std_devs["PTS"]
+        self.viability["TRB"] = (self.row['TRB'] - benchmarks["TRB"])/std_devs["TRB"]
+        self.viability["AST"] = (self.row['AST'] - benchmarks["AST"])/std_devs["AST"]
+        self.viability["STL"] = (self.row['STL'] - benchmarks["STL"])/std_devs["STL"]
+        self.viability["BLK"] = (self.row['BLK'] - benchmarks["BLK"])/std_devs["BLK"]
+        self.viability["TOS"] = (self.row['TOV'] - benchmarks["TOV"])/std_devs["TOV"]
+        self.viability["MP"] = (self.row['MP'] - benchmarks["MP"])/std_devs["MP"]
+        self.viability["USG%"] = (df.adv.loc[df.adv.PLAYER == self.name, 'USG%'].values[0] - benchmarks["USG%"])/std_devs["USG%"]
         
     #returns true if self > pick
     def compare(self, pick, punts):
@@ -256,14 +257,14 @@ class Benchmarks:
 
     benchmarks = {"FG%": 0.0, "FT%": 0.0, "3P": 0.0, "PTS": 0.0,
                   "TRB": 0.0, "AST": 0.0, "STL": 0.0, "BLK": 0.0,
-                  "TOV": 0.0, "M/G": 0.0, "USG%": 0.0, "TS%": 0.0,
+                  "TOV": 0.0, "MP": 0.0, "USG%": 0.0, "TS%": 0.0,
                   "eFG%": 0.0, "PER": 0.0, "TRB%": 0.0, "AST%": 0.0,
                   "STL%": 0.0, "BLK%": 0.0, "TOV%": 0.0, "USG%": 0.0,
                   "BPM": 0.0}
     
     std_devs = {"FG%": 0.0, "FT%": 0.0, "3P": 0.0, "PTS": 0.0,
                 "TRB": 0.0, "AST": 0.0, "STL": 0.0, "BLK": 0.0,
-                "TOV": 0.0, "M/G": 0.0, "USG%": 0.0, "TS%": 0.0,
+                "TOV": 0.0, "MP": 0.0, "USG%": 0.0, "TS%": 0.0,
                 "eFG%": 0.0, "PER": 0.0, "TRB%": 0.0, "AST%": 0.0,
                 "STL%": 0.0, "BLK%": 0.0, "TOV%": 0.0, "USG%": 0.0,
                 "BPM": 0.0}
@@ -273,7 +274,7 @@ class Benchmarks:
     players = 0
 
     def build(self, df):
-        #doesn't work because to build benchmarks dataframe must be preranked FIX ASAP
+        
         for row in range(self.players):
             for col in list(df.avg.columns.values):
                 if str(col) in self.benchmarks:
@@ -287,11 +288,11 @@ class Benchmarks:
     
         for col in list(df.avg.columns.values):
             if str(col) in self.std_devs:
-                self.std_devs[col] = stdev(df.avg[str(col)])
+                self.std_devs[col] = df.avg[str(col)].std()
 
         for col in list(df.adv.columns.values):
             if str(col) in self.std_devs:
-                self.std_devs[col] = stdev(df.adv[str(col)])
+                self.std_devs[col] = df.adv[str(col)].std()
 
     def __init__(self, draft_size):
         self.players = draft_size
@@ -357,7 +358,7 @@ def get_input():
 def setup_draft(inputs, df):
     inputs['rounds'] = inputs['team_size'] - inputs['keeper_count']
     inputs['picks_left'] = inputs['rounds'] * inputs['league_size']
-    print("Before we optimize your draft, are there any categories you wish to punt?\nFG% - FT% - 3P - PTS - REB - AST - STL - BLK - TOS")
+    print("Before we optimize your draft, are there any categories you wish to punt?\nFG% - FT% - 3P - PTS - REB - AST - STL - BLK - TOV")
     to_punt = str(input("Enter list of comma separated categories in uppercase: "))
     puntstr = to_punt.replace(" ", "")
     inputs['punt'] = puntstr.split(',')
@@ -401,20 +402,19 @@ def mock(inputs, df):
         print(participants[i].name)
         print(participants[i].team.name)
 
-    print(analytics.benchmarks)
-    print(analytics.std_devs)
-    print(analytics.pos_count)
-    print(df.avg)
-    exit()
+    print()
     count = 1            
     rnd = 1
+    drafted = [0] * 530
+    df.players['PLAYER'] = df.avg['PLAYER']
+    df.players['DRAFTED'] = drafted
     while rnd < 16:
         if inputs['draft_format'] == 1 and rnd % 2 == 0:
-            for i in range(league_size - 1, -1, -1):
-                to_pick = Pick(df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
+            for i in range(inputs['league_size'] - 1, -1, -1):
+                to_pick = Pick(df, df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
                 for row in range(inputs['picks_left']):
-                    if df.players.loc[row, 'Drafted'] == 0 and df.players.loc[row, 'Name'] != to_pick.name:
-                        other_pick = Pick(row, analytics.benchmarks, analytics.std_devs)
+                    if df.players.loc[row, 'DRAFTED'] == 0 and df.players.loc[row, 'PLAYER'] != to_pick.name:
+                        other_pick = Pick(df, row, analytics.benchmarks, analytics.std_devs)
                         if to_pick.compare(other_pick, participants[i].punt_cats):
                             to_pick = other_pick
                 
@@ -425,7 +425,7 @@ def mock(inputs, df):
                         participants[i].team.roster += [to_pick.name]
                     else:
                         draft = input("Enter name of player you wish to draft: ")
-                        to_pick.row_num = df.players.index[df['PLAYER']==draft]
+                        to_pick.row_num = df.players.index[df.players['PLAYER']==draft]
                         to_pick.name = df.players.loc[df.players.index[to_pick.row_num], 'PLAYER']
                         participants[i].team.roster += [to_pick.name]
                         
@@ -437,11 +437,11 @@ def mock(inputs, df):
                 df.players.loc[df.players.index[to_pick.row_num], 'DRAFTED'] = 1
 
         else:
-            for i in range(league_size):
-                to_pick = Pick(df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
+            for i in range(inputs['league_size']):
+                to_pick = Pick(df, df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
                 for row in range(inputs['picks_left']):
-                    if df.players.loc[row, 'Drafted'] == 0 and df.players.loc[row, 'Name'] != to_pick.name:
-                        other_pick = Pick(row, analytics.benchmarks, analytics.std_devs)
+                    if df.players.loc[row, 'DRAFTED'] == 0 and df.players.loc[row, 'PLAYER'] != to_pick.name:
+                        other_pick = Pick(df, row, analytics.benchmarks, analytics.std_devs)
                         if to_pick.compare(other_pick, participants[i].punt_cats):
                             to_pick = other_pick
                 
@@ -452,7 +452,7 @@ def mock(inputs, df):
                         participants[i].team.roster += [to_pick.name]
                     else:
                         draft = input("Enter name of player you wish to draft: ")
-                        to_pick.row_num = df.players.index[df['PLAYER']==draft]
+                        to_pick.row_num = df.players.index[df.players['PLAYER']==draft]
                         to_pick.name = df.players.loc[df.players.index[to_pick.row_num], 'PLAYER']
                         participants[i].team.roster += [to_pick.name]
                         
@@ -477,14 +477,13 @@ if __name__ == '__main__':
     else:
         df = DF(today.year - 1)
         
-    print(df.avg)
-    """print('\nWelcome to the Sixth Man, the fantasy basketball draft optimizer!')
+    print('\nWelcome to the Sixth Man, the fantasy basketball draft optimizer!')
     #print('Answer the following prompts to get started.')
     #inputs = get_input()
     inputs = {'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': 0,
               'scoring_format': 1, 'cats': 9, 'draft_format': 1, 'league_size': 10,
               'draft_pos': 8, 'team_size': 15, 'keeper': 0, 'keeper_count': 0}
     setup_draft(inputs, df)
-    print('Thanks for using the Sixth Man Fantasy Hoops Optimizer, good luck!')"""
+    print('Thanks for using the Sixth Man Fantasy Hoops Optimizer, good luck!')
     stop = timeit.default_timer()
     print('Time: ', stop - start)
