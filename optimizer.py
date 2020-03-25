@@ -5,7 +5,7 @@ from statistics import *
 from sportsreference.nba.teams import Teams
 from basketball_reference_scraper.teams import get_roster, get_roster_stats
 from basketball_reference_scraper.players import get_stats
-pd.set_option('display.max_columns', None)
+#pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
 class DF:
@@ -15,6 +15,65 @@ class DF:
     adv = pd.DataFrame()
     year = 0
 
+    def rank(self, df):
+        sum_pts = df['PTS'].sum(skipna=True)
+        sum_3 = df['3P'].sum(skipna=True)
+        sum_reb = df['TRB'].sum(skipna=True)
+        sum_ast = df['AST'].sum(skipna=True)
+        sum_stl = df['STL'].sum(skipna=True)
+        sum_blk = df['BLK'].sum(skipna=True)
+        mean_fg = df['FG%'].mean(skipna=True)
+        mean_ft = df['FT%'].mean(skipna=True)
+        std_fg = df['FG%'].std(skipna=True)
+        std_ft = df['FT%'].std(skipna=True)
+        values = [0] * 530
+        countfg = 0
+        countft = 0
+        for i in range(len(df)):
+            fg = ((df.at[i, 'FG%'] - mean_fg)/std_fg)
+            ft = ((df.at[i, 'FT%'] - mean_ft)/std_ft)
+            if fg > 0:
+                countfg += 1
+            if ft > 0:
+                countft += 1
+                
+            values[i] = (df.at[i, 'PTS'] + ((sum_pts/sum_3)*df.at[i, '3P']) + ((sum_pts/sum_reb)*df.at[i, 'TRB']) + ((sum_pts/sum_ast)*df.at[i, 'AST']) + ((sum_pts/sum_stl)*df.at[i, 'STL']) + ((sum_pts/sum_blk)*df.at[i, 'BLK']))
+
+        df['VALUE'] = values
+        df = df.sort_values(by='VALUE', ascending=False).reset_index(drop=True)
+        print(countfg, countft)
+        return df
+    
+    def remove_duplicates(self, df, data):
+        dup = df.duplicated('PLAYER', False)
+        i = 0
+        count = 0
+        while i < len(dup):
+            if dup[i]:
+                count += 1
+                player = df.at[i, 'PLAYER']
+                stats = get_stats(player, data, 2019)
+                for j in range(i+1, len(dup)):
+                    if not dup[j] or df.at[j, 'PLAYER'] != player:
+                        df = df.drop(df.index[(i+1):j]).reset_index(drop=True)
+                        dup = dup.drop(dup.index[(i+1):j]).reset_index(drop=True)
+                        break
+                    
+                for column in df.columns:
+                    if column in stats.columns and column != 'POS':
+                        df.at[i, column] = stats.at[0, column]
+
+                dup[i] = False
+
+                if count % 10 == 0:
+                    print(count, "duplicates removed.")
+                
+            i += 1
+
+        print(count, "total duplicates removed.\n")
+        return df
+
+    
     def set_types(self, df):
         for col in df.columns.values:
             if 'Unnamed' in str(col):
@@ -91,26 +150,32 @@ class DF:
                     print("   Fetching " + team.name + " " + str(year_in-1) + "-" + str(year_in)[2:] + " advanced roster stats.\n")
                     self.adv = self.adv.append(get_roster_stats(team.abbreviation, year_in, 'ADVANCED'), ignore_index = True)
 
-            self.avg = self.avg.sort_values(by=['PLAYER']).reset_index(drop=True)
-            self.p36 = self.p36.sort_values(by=['PLAYER']).reset_index(drop=True)
-            self.adv = self.adv.sort_values(by=['PLAYER']).reset_index(drop=True)
-            print("   NBA per game dataframe constructed and sorted by player.\n   NBA per 36 dataframe constructed and sorted by player.\n   NBA advanced stats dataframe constructed and sorted by player.\n")
-            print("\nFixing player names and setting column types in NBA per game dataframe.")
-            self.avg = self.fix_names(self.avg)
-            self.avg = self.set_types(self.avg)
-            print("Fixing player names and setting column types in NBA per minute dataframe.")
-            self.p36 = self.fix_names(self.p36)
-            self.p36 = self.set_types(self.p36)
-            print("Fixing player names and setting column types in NBA advanced stats dataframe.")
-            self.adv = self.fix_names(self.adv)
-            self.adv = self.set_types(self.adv)
+        self.avg = self.avg.sort_values(by=['PLAYER']).reset_index(drop=True)
+        self.p36 = self.p36.sort_values(by=['PLAYER']).reset_index(drop=True)
+        self.adv = self.adv.sort_values(by=['PLAYER']).reset_index(drop=True)
+        print("   NBA per game dataframe constructed and sorted by player.\n   NBA per 36 dataframe constructed and sorted by player.\n   NBA advanced stats dataframe constructed and sorted by player.\n")
+        print("\nFixing player names, setting column types, and removing duplicates in NBA per game dataframe.")
+        self.avg = self.fix_names(self.avg)
+        self.avg = self.set_types(self.avg)
+        self.avg = self.remove_duplicates(self.avg, 'PER_GAME')
+        print("Fixing player names, setting column types, and removing duplicates in NBA per minute dataframe.")
+        self.p36 = self.fix_names(self.p36)
+        self.p36 = self.set_types(self.p36)
+        self.p36 = self.remove_duplicates(self.p36, 'PER_MINUTE')
+        print("Fixing player names, setting column types, and removing duplicates in NBA advanced stats dataframe.")
+        self.adv = self.fix_names(self.adv)
+        self.adv = self.set_types(self.adv)
+        self.adv = self.remove_duplicates(self.adv, 'ADVANCED')
 
-            pickle.dump(self.avg, open("df_avg.pickle", "wb"))
-            pickle.dump(self.p36, open("df_36.pickle", "wb"))
-            pickle.dump(self.adv, open("df_adv.pickle", "wb"))
-            print(self.year, "per game dataset of size", len(self.avg), "constructed and stored successfully.")
-            print(self.year, "per minute dataset of size", len(self.p36), "constructed and stored successfully.")
-            print(self.year, "advanced dataset of size", len(self.adv), "constructed and stored successfully.")
+        print("Ranking and sorting NBA per game dataframe.")
+        self.avg = self.rank(self.avg)
+        
+        pickle.dump(self.avg, open("df_avg.pickle", "wb"))
+        pickle.dump(self.p36, open("df_36.pickle", "wb"))
+        pickle.dump(self.adv, open("df_adv.pickle", "wb"))
+        print(self.year, "per game dataset of size", len(self.avg), "constructed and stored successfully.")
+        print(self.year, "per minute dataset of size", len(self.p36), "constructed and stored successfully.")
+        print(self.year, "advanced dataset of size", len(self.adv), "constructed and stored successfully.")
 
     def __init__(self, year_in):
         self.year = year_in
@@ -412,13 +477,14 @@ if __name__ == '__main__':
     else:
         df = DF(today.year - 1)
         
-    print('\nWelcome to the Sixth Man, the fantasy basketball draft optimizer!')
+    print(df.avg)
+    """print('\nWelcome to the Sixth Man, the fantasy basketball draft optimizer!')
     #print('Answer the following prompts to get started.')
     #inputs = get_input()
     inputs = {'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': 0,
               'scoring_format': 1, 'cats': 9, 'draft_format': 1, 'league_size': 10,
               'draft_pos': 8, 'team_size': 15, 'keeper': 0, 'keeper_count': 0}
     setup_draft(inputs, df)
-    print('Thanks for using the Sixth Man Fantasy Hoops Optimizer, good luck!')
+    print('Thanks for using the Sixth Man Fantasy Hoops Optimizer, good luck!')"""
     stop = timeit.default_timer()
     print('Time: ', stop - start)
