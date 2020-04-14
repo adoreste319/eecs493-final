@@ -1,7 +1,54 @@
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="text-center">The Sixth Man</h1>
+<div class="outer">
+    <div class="inner">
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <div class="navbar-brand home" (click)="setActive('home')">The Sixth Man</div>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li class="{{getActive('mydraft')}} navbar-custom" (click)="setActive('mydraft')">My Draft</li>
+                    <li class="{{getActive('draftsheet')}} navbar-custom" (click)="setActive('draftsheet')">Draft Sheet</li>
+                    <li class="{{getActive('results')}} navbar-custom" (click)="setActive('results')">Results</li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="navbar-custom" (click)="setActive('user')"><span class="glyphicon glyphicon-user"></span></li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container" *ngIf="homeActive">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="text-center">The Sixth Man</h1>
+                </div>
+            </div>
+        </div>
+        <div class="container" *ngIf="myDraftActive">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="text-center">My Draft Page</h1>
+                </div>
+            </div>
+        </div>
+        <div class="container" *ngIf="draftSheetActive">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="text-center">Draft Sheet Page</h1>
+                </div>
+            </div>
+        </div>
+        <div class="container" *ngIf="resultsActive">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="text-center">Results Page</h1>
+                </div>
+            </div>
+        </div>
+        <div class="container" *ngIf="userActive">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="text-center">User Page</h1>
+                </div>
+            </div>
         </div>
     </div>
 </div>
