@@ -1,63 +1,118 @@
-import timeit, sys, animation, time, pickle, os, datetime
+import timeit, sys, animation, time, pickle, os, datetime, math
 import pandas as pd
 from progress.bar import IncrementalBar
 from statistics import *
 from sportsreference.nba.teams import Teams
 from basketball_reference_scraper.teams import get_roster, get_roster_stats
 from basketball_reference_scraper.players import get_stats
+from basketball_reference_scraper.injury_report import get_injury_report
+#from decimal import *
+#program_context = Context(prec=12)
+#setcontext(program_context)
 #pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
+#pd.set_option('float_format', '{:f}'.format)
 
 class DF:
     players = pd.DataFrame()
     avg = pd.DataFrame()
     p36 = pd.DataFrame()
     adv = pd.DataFrame()
+    injuries = get_injury_report()
     year = 0
 
     def rank(self, df):
-        sum_pts = df['PTS'].sum(skipna=True)
-        sum_3 = df['3P'].sum(skipna=True)
-        sum_reb = df['TRB'].sum(skipna=True)
-        sum_ast = df['AST'].sum(skipna=True)
-        sum_stl = df['STL'].sum(skipna=True)
-        sum_blk = df['BLK'].sum(skipna=True)
-        mean_pts = df['PTS'].mean(skipna=True)
-        mean_3 = df['3P'].mean(skipna=True)
-        mean_reb = df['TRB'].mean(skipna=True)
-        mean_ast = df['AST'].mean(skipna=True)
-        mean_stl = df['STL'].mean(skipna=True)
-        mean_blk = df['BLK'].mean(skipna=True)
-        std_pts = df['PTS'].std(skipna=True)
-        std_3 = df['3P'].std(skipna=True)
-        std_reb = df['TRB'].std(skipna=True)
-        std_ast = df['AST'].std(skipna=True)
-        std_stl = df['STL'].std(skipna=True)
-        std_blk = df['BLK'].std(skipna=True)
-        mean_fg = df['FG%'].mean(skipna=True)
-        mean_ft = df['FT%'].mean(skipna=True)
-        std_fg = df['FG%'].std(skipna=True)
-        std_ft = df['FT%'].std(skipna=True)
-        values = [0] * 530
+        sums = {'PTS': df['PTS'].sum(skipna=True), '3P': df['3P'].sum(skipna=True), 'TRB': df['TRB'].sum(skipna=True),
+                'AST': df['AST'].sum(skipna=True), 'STL': df['STL'].sum(skipna=True), 'BLK': df['BLK'].sum(skipna=True)}
+
+        means = {'PTS': df['PTS'].mean(skipna=True), '3P': df['3P'].mean(skipna=True), 'TRB': df['TRB'].mean(skipna=True),
+                'AST': df['AST'].mean(skipna=True), 'STL': df['STL'].mean(skipna=True), 'BLK': df['BLK'].mean(skipna=True),
+                'FG%': df['FG%'].mean(skipna=True), 'FT%': df['FT%'].mean(skipna=True), 'PER': self.adv['PER'].mean(skipna=True),
+                'TS%': self.adv['TS%'].mean(skipna=True), 'TRB%': self.adv['TRB%'].mean(skipna=True), 'eFG%': df['eFG%'].mean(skipna=True),
+                'AST%': self.adv['AST%'].mean(skipna=True), 'STL%': self.adv['STL%'].mean(skipna=True),
+                'BLK%': self.adv['BLK%'].mean(skipna=True), 'USG%': self.adv['USG%'].mean(skipna=True),
+                'VORP': self.adv['VORP'].mean(skipna=True), 'BPM': self.adv['BPM'].mean(skipna=True)}
+
+        std_devs = {'PTS': df['PTS'].std(skipna=True), '3P': df['3P'].std(skipna=True), 'TRB': df['TRB'].std(skipna=True),
+                    'AST': df['AST'].std(skipna=True), 'STL': df['STL'].std(skipna=True), 'BLK': df['BLK'].std(skipna=True),
+                    'FG%': df['FG%'].std(skipna=True), 'FT%': df['FT%'].std(skipna=True), 'PER': self.adv['PER'].std(skipna=True),
+                    'TS%': self.adv['TS%'].std(skipna=True), 'TRB%': self.adv['TRB%'].std(skipna=True), 'eFG%': df['eFG%'].std(skipna=True),
+                    'AST%': self.adv['AST%'].std(skipna=True), 'STL%': self.adv['STL%'].std(skipna=True),
+                    'BLK%': self.adv['BLK%'].std(skipna=True), 'USG%': self.adv['USG%'].std(skipna=True),
+                    'VORP': self.adv['VORP'].std(skipna=True), 'BPM': self.adv['BPM'].std(skipna=True)}
+        
+        vectors = {'FG%': [0,0], 'FT%': [0,0], 'PTS': [0,0],
+                   '3P': [0,0], 'TRB': [0,0], 'AST': [0,0],
+                   'STL': [0,0], 'BLK': [0,0], 'PER': [0,0],
+                   'TS%': [0,0], 'TRB%': [0,0], 'eFG%': [0,0],
+                   'AST%': [0,0], 'STL%': [0,0],
+                   'BLK%': [0,0], 'USG%': [0,0],
+                   'VORP': [0,0], 'BPM': [0,0]}
+        
+        cats = ["FG%", "FT%", "3P", "PTS", "TRB", "AST", "STL", "BLK", "USG%"]
+        adv = ["USG%"]
         
         for i in range(len(df)):
-            fg = ((df.at[i, 'FG%'] - mean_fg)/std_fg)
-            ft = ((df.at[i, 'FT%'] - mean_ft)/std_ft)
-            pts = ((df.at[i, 'PTS'] - mean_pts)/std_pts)
-            threes = ((df.at[i, '3P'] - mean_3)/std_3)
-            reb = ((df.at[i, 'TRB'] - mean_reb)/std_reb)
-            ast = ((df.at[i, 'AST'] - mean_ast)/std_ast)
-            stl = ((df.at[i, 'STL'] - mean_stl)/std_stl)
-            blk = ((df.at[i, 'BLK'] - mean_blk)/std_blk)
+            for cat in cats:
+                if cat in adv:
+                    name = self.adv.index[self.adv['PLAYER'] == df.at[i, 'PLAYER']][0]
+                    if not pd.isnull(self.adv.at[name, cat]):
+                        num = int(((self.adv.at[name, cat] - means[cat])/std_devs[cat]))
+                        if num >= 0:
+                            vectors[cat][1] += 1
+                        else:
+                            vectors[cat][0] += 1
+                            
+                else:
+                    if not pd.isnull(df.at[i, cat]):
+                        num = int(((df.at[i, cat] - means[cat])/std_devs[cat]))
+                        if num >= 0:
+                            vectors[cat][1] += 1
+                        else:
+                            vectors[cat][0] += 1
 
-            if df.at[i, 'G'] >= 41:
-                values[i] = (df.at[i, 'PTS'] + ((sum_pts/sum_3)*df.at[i, '3P']) + ((sum_pts/sum_reb)*df.at[i, 'TRB']) + ((sum_pts/sum_ast)*df.at[i, 'AST']))
-                values[i] += ((sum_pts/sum_stl)*df.at[i, 'STL']) + ((sum_pts/sum_blk)*df.at[i, 'BLK']) + ((sum_pts/250)*fg) + ((sum_pts/283)*ft)
-                """below approach will not work unless a wider application of rarity is implemented, some production is elite apart from rare
-                values[i] = (pts + ((sum_pts/sum_3)*threes) + ((sum_pts/sum_reb)*reb) + ((sum_pts/sum_ast)*ast))
-                values[i] += ((sum_pts/sum_stl)*stl) + ((sum_pts/sum_blk)*blk) + ((sum_pts/250)*fg) + ((sum_pts/283)*ft)"""
+        values = [None] * 530
+        null = True
+        for i in range(len(df)):
+            check = df.at[i, 'PLAYER'] in self.injuries['PLAYER'].unique() and 'Out' in self.injuries.loc[self.injuries['PLAYER'] == df.at[i, 'PLAYER']]['STATUS']
+            if df.at[i, 'G'] >= 31 and not check:
+                values[i] = 0
+                player_devs = {'PTS': 0.0, '3P': 0.0, 'TRB': 0.0,
+                               'AST': 0.0, 'STL': 0.0, 'BLK': 0.0,
+                               'FG%': 0.0, 'FT%': 0.0, 'PER': 0.0,
+                               'TS%': 0.0, 'TRB%': 0.0, 'AST%': 0.0,
+                               'STL%': 0.0, 'BLK%': 0.0, 'USG%': 0.0,
+                               'VORP': 0.0, 'BPM': 0.0, 'eFG%': 0.0}
+                for cat in cats:
+                    if cat in adv:
+                        name = self.adv.index[self.adv['PLAYER'] == df.at[i, 'PLAYER']][0]
+                        if not pd.isnull(self.adv.at[name, cat]):
+                            player_devs[cat] = ((self.adv.at[name, cat] - means[cat])/std_devs[cat])
+                            null = False
+                        
+                    else:
+                        if not pd.isnull(df.at[i, cat]):
+                            player_devs[cat] = ((df.at[i, cat] - means[cat])/std_devs[cat])
+                            null = False
+                            
+                    if not null:    
+                        if cat == 'PTS':
+                            values[i] += df.at[i, cat]
+
+                        elif '%' in cat or cat in adv:
+                            if player_devs[cat] >= 0:
+                                values[i] += (sums['PTS']/vectors[cat][1])*player_devs[cat]
+                                
+                            else:
+                                values[i] += (sums['PTS']/vectors[cat][0])*player_devs[cat]
+
+                        else:
+                            values[i] += ((sums['PTS']/sums[cat])*df.at[i, cat])
+                            
+                    null = True
+                                                
                 values[i] /= df.at[i, 'MP']
-                values[i] *= (df.at[i, 'GS']/df.at[i, 'G'])
+                values[i] *= ((df.at[i, 'GS']/df.at[i, 'G']) + 1)
 
         df['VALUE'] = values
         df = df.sort_values(by='VALUE', ascending=False).reset_index(drop=True)
@@ -150,6 +205,11 @@ class DF:
             self.avg = pickle.load(open("df_avg.pickle", "rb"))
             self.p36 = pickle.load(open("df_36.pickle", "rb"))
             self.adv = pickle.load(open("df_adv.pickle", "rb"))
+
+            print("Ranking and sorting NBA per game dataframe.")
+            self.avg = self.rank(self.avg)
+            print(self.avg)
+            exit()
             
         except (OSError, IOError) as e:
             print("No pre-existing datasets found.")
