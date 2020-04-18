@@ -87,4 +87,15 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+
+ mouseoverAlexis(){
+  var nameCard = document.getElementById("middle");
+  nameCard.style.opacity = "1";
+}
+
+ mouseoutAlexis(){
+  var nameCard = document.getElementById("middle");
+  nameCard.style.opacity = "0";
+}
+
 }
