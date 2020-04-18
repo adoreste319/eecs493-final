@@ -1,6 +1,6 @@
 <div class="outer">
     <div class="inner">
-        <nav class="navbar navbar-inverse" #stickyNav [class.sticky] = "sticky">
+        <nav class="navbar navbar-inverse nav-custom" >
             <div class="container-fluid">
                 <div class="navbar-header">
                     <div class="navbar-brand home" (click)="setActive('home')">The Sixth Man</div>
@@ -62,21 +62,21 @@
             </div>
             <div class= "images">
                 <div class = "column">
-                <img src="assets/alexis-img.JPG" class="image" id="alexis-bio"  (mouseenter)= "mouseoverAlexis()" (mouseleave)="mouseoutAlexis()" style="width:100%">
-                <div class="middle" #middle>
+                <img src="assets/alexis-img.JPG" class="image" id="alexis-bio"  (mouseenter)= "mouseoverAlexis()" (mouseleave)="mouseoutAlexis()" style="width:100%" height="400">
+                <div class="middle" #middleA>
                     <div class = "text">Alexis Doreste</div>
                 </div>
                 </div>
                 <div class = "column">
-                <img src="assets/brennan-img.JPG" class="image" id="brennan-bio" style="width:100%">
-                <div class="middle-brennan">
-                    <div class = "text-brennan">Brennan Burke</div>
+                <img src="assets/brennan-img.JPG" class="image" id="brennan-bio" (mouseenter)= "mouseoverBrennan()" (mouseleave)="mouseoutBrennan()"style="width:100%" height="400">
+                <div class="middleB" #middleB>
+                    <div class = "text">Brennan Burke</div>
                 </div>
                 </div>
                 <div class = "column">
-                <img src="assets/keara-img.jpeg" class="image" id="keara-bio" style="width:100%">
-                <div class="middle-keara">
-                    <div class = "text-keara">Keara Bird</div>
+                <img src="assets/keara-img.jpeg" class="image" id="keara-bio" (mouseenter)= "mouseoverKeara()" (mouseleave)="mouseoutKeara()" style="width:100%" height="400">
+                <div class="middleK" #middleK>
+                    <div class = "text">Keara Bird</div>
                 </div>
                 </div>
             </div>

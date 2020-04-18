@@ -16,10 +16,10 @@ export class DashboardComponent implements OnInit {
   draftSheetActive: boolean = false;
   userActive: boolean = false;
   infoActive: boolean = false;
-  @ViewChild("middle") middle: ElementRef;
-  sticky: boolean = false;
-  @ViewChild('stickyNav') navElement: ElementRef;
-  navPositon: any;
+  @ViewChild("middleA") middleA: ElementRef;
+  @ViewChild("middleB") middleB: ElementRef;
+  @ViewChild("middleK") middleK: ElementRef;
+
 
   constructor(
     private dashboardService: DashboardService,
@@ -93,28 +93,32 @@ export class DashboardComponent implements OnInit {
 
 
 
-ngAfterViewInit(){
-    this.navPosition = this.navElement.nativeElement.offsetTop
-}
-
-//BROKEN PART
-@HostListener('window:scroll', ['$event'])
-    handleScroll(){
-        const windowScroll = window.pageYOffset;
-        if(windowScroll >= this.navPosition){
-            this.sticky = true;
-        } else {
-            this.sticky = false;
-        }
-    }
-
 
  mouseoverAlexis(){
-  this.middle.nativeElement.style.opacity = "1";
+  this.middleA.nativeElement.style.opacity = "1";
 }
 
  mouseoutAlexis(){
-  this.middle.nativeElement.style.opacity = "0";
+  this.middleA.nativeElement.style.opacity = "0";
 }
+
+
+ mouseoverBrennan(){
+  this.middleB.nativeElement.style.opacity = "1";
+}
+
+ mouseoutBrennan(){
+  this.middleB.nativeElement.style.opacity = "0";
+}
+
+
+ mouseoverKeara(){
+  this.middleK.nativeElement.style.opacity = "1";
+}
+
+ mouseoutKeara(){
+  this.middleK.nativeElement.style.opacity = "0";
+}
+
 
 }
