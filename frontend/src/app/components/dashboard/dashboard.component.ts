@@ -17,6 +17,9 @@ export class DashboardComponent implements OnInit {
   userActive: boolean = false;
   infoActive: boolean = false;
   @ViewChild("middle") middle: ElementRef;
+  sticky: boolean = false;
+  @ViewChild('stickyNav') navElement: ElementRef;
+  navPositon: any;
 
   constructor(
     private dashboardService: DashboardService,
@@ -87,6 +90,23 @@ export class DashboardComponent implements OnInit {
       this.homeActive = false;
     }
   }
+
+
+
+ngAfterViewInit(){
+    this.navPosition = this.navElement.nativeElement.offsetTop
+}
+
+//BROKEN PART
+@HostListener('window:scroll', ['$event'])
+    handleScroll(){
+        const windowScroll = window.pageYOffset;
+        if(windowScroll >= this.navPosition){
+            this.sticky = true;
+        } else {
+            this.sticky = false;
+        }
+    }
 
 
  mouseoverAlexis(){

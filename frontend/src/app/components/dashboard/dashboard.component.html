@@ -1,6 +1,6 @@
 <div class="outer">
     <div class="inner">
-        <nav class="navbar navbar-inverse">
+        <nav class="navbar navbar-inverse" #stickyNav [class.sticky] = "sticky">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <div class="navbar-brand home" (click)="setActive('home')">The Sixth Man</div>
