@@ -208,8 +208,14 @@ class DF:
 
             print("Ranking and sorting NBA per game dataframe.")
             self.avg = self.rank(self.avg)
-            print(self.avg)
-            exit()
+            #print(self.avg)
+            #exit()
+            pickle.dump(self.avg, open("df_avg.pickle", "wb"))
+            pickle.dump(self.p36, open("df_36.pickle", "wb"))
+            pickle.dump(self.adv, open("df_adv.pickle", "wb"))
+            print(self.year, "per game dataset of size", len(self.avg), "fetched successfully.")
+            print(self.year, "per minute dataset of size", len(self.p36), "fetched successfully.")
+            print(self.year, "advanced dataset of size", len(self.adv), "fetched successfully.")
             
         except (OSError, IOError) as e:
             print("No pre-existing datasets found.")
@@ -292,7 +298,7 @@ class Player:
 
     name = ""
     position = 0
-    punt_cats = ["to/g"]
+    punt_cats = ["TOV"]
     team = Team("", 15)
     
     def __init__(self, name_in, pos_in, team_name, size_in, to_punt):
@@ -547,14 +553,10 @@ def mock(inputs, df):
         print(i, end=" ")
     print()
     print()
+    
     #set benchmarks
     analytics = Benchmarks(inputs['picks_left'])
     analytics.build(df)
-
-    #make sure players are set up in correct draft order
-    for player in league.players:
-        print(player.name)
-        print(player.team.name)
 
     print()
     count = 1            
@@ -562,7 +564,7 @@ def mock(inputs, df):
     drafted = [0] * 530
     df.players['PLAYER'] = df.avg['PLAYER']
     df.players['DRAFTED'] = drafted
-    while rnd < 16:
+    while rnd < inputs['rounds']:
         if inputs['draft_format'] == 1 and rnd % 2 == 0:
             for i in range(inputs['league_size'] - 1, -1, -1):
                 comparison = []
@@ -586,18 +588,49 @@ def mock(inputs, df):
                             
                 
                 if league.players[i].name == inputs['owner_name']:
-                    answer = int(input(to_pick.name + " is your optimum pick! Do you wish to draft him? "))
-                    if answer:
-                        print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in the draft.")
-                        league.players[i].add(to_pick.row)
-                    else:
-                        draft = input("Enter name of player you wish to draft: ")
-                        to_pick.row_num = df.players.index[df.players['PLAYER']==draft]
-                        to_pick.name = df.players.loc[df.players.index[to_pick.row_num], 'PLAYER']
-                        league.players[i].add(to_pick.row)
+                    answer = None
+                    while answer not in ("yes", "no"):
+                        answer = int(input(to_pick.name + " is your optimum pick! Do you wish to draft him? "))
+                        if answer == "yes":
+                            print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
+                            league.players[i].add(to_pick.row)
+                            
+                        elif answer == "no":
+                            draft = input("Enter name of player you wish to draft: ")
+                            players = difflib.get_close_matches(name, df['PLAYER'])
+                            while len(players) == 0 or len(players) > 1:
+                                name = input("Re-enter the name of the player you wish to draft: ")
+                                players = difflib.get_close_matches(name, df['PLAYER'])
+                                if len(players) == 1:
+                                    break
+                                elif len(players) > 1:
+                                    for player in players:
+                                        num = 1
+                                        print(num, player)
+                                        num += 1
+
+                                    num = input("Enter the number corresponding to the player you wish to draft: ")
+                                    while not num.isdigit() or int(num) > len(players):
+                                        num = input("Re-enter *JUST* the number corresponding to the player you wish to draft: ")
+                                        
+                                    name = players[num]
+                                    players = [name]
+
+                            if len(players) == 1:
+                                conf = input("Is " + name + " the right player? ")
+                                if conf == "yes":
+                                    to_pick = Pick(df, df.players.index[df.players['PLAYER']==name], analytics.benchmarks, analytics.std_devs)
+                                    to_pick.row_num = df.players.index[df.players['PLAYER']==name]
+                                    df.players.loc[to_pick.row_num, 'DRAFTED'] = 1
+                                    to_pick.name = name
+                                    print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
+                                    league.players[i].add(to_pick.row)
+                            
+                        else:
+                            print("Please enter yes or no.")
                         
                 else:
-                    print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in the draft.")
+                    print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
                     league.players[i].add(to_pick.row)
 
                 df.players.loc[df.players.index[to_pick.row_num], 'DRAFTED'] = count
@@ -625,15 +658,46 @@ def mock(inputs, df):
                                 comparison = new_comp
                 
                 if league.players[i].name == inputs['owner_name']:
-                    answer = int(input(to_pick.name + " is your optimum pick! Do you wish to draft him? "))
-                    if answer:
-                        print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in the draft.")
-                        league.players[i].add(to_pick.row)
-                    else:
-                        draft = input("Enter name of player you wish to draft: ")
-                        to_pick.row_num = df.players.index[df.players['PLAYER']==draft]
-                        to_pick.name = df.players.loc[df.players.index[to_pick.row_num], 'PLAYER']
-                        league.players[i].add(to_pick.row)
+                    answer = None
+                    while answer not in ("yes", "no"):
+                        answer = int(input(to_pick.name + " is your optimum pick! Do you wish to draft him? "))
+                        if answer == "yes":
+                            print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
+                            league.players[i].add(to_pick.row)
+                            
+                        elif answer == "no":
+                            draft = input("Enter name of player you wish to draft: ")
+                            players = difflib.get_close_matches(name, df['PLAYER'])
+                            while len(players) == 0 or len(players) > 1:
+                                name = input("Re-enter the name of the player you wish to draft: ")
+                                players = difflib.get_close_matches(name, df['PLAYER'])
+                                if len(players) == 1:
+                                    break
+                                elif len(players) > 1:
+                                    for player in players:
+                                        num = 1
+                                        print(num, player)
+                                        num += 1
+
+                                    num = input("Enter the number corresponding to the player you wish to draft: ")
+                                    while not num.isdigit() or int(num) > len(players):
+                                        num = input("Re-enter *JUST* the number corresponding to the player you wish to draft: ")
+                                        
+                                    name = players[num]
+                                    players = [name]
+
+                            if len(players) == 1:
+                                conf = input("Is " + name + " the right player? ")
+                                if conf == "yes":
+                                    to_pick = Pick(df, df.players.index[df.players['PLAYER']==name], analytics.benchmarks, analytics.std_devs)
+                                    to_pick.row_num = df.players.index[df.players['PLAYER']==name]
+                                    df.players.loc[to_pick.row_num, 'DRAFTED'] = 1
+                                    to_pick.name = name
+                                    print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
+                                    league.players[i].add(to_pick.row)
+                            
+                        else:
+                            print("Please enter yes or no.")
                         
                 else:
                     print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in the draft.")
@@ -645,8 +709,241 @@ def mock(inputs, df):
         rnd += 1
     
 def live(inputs, df):
-    print("not implemented")
+    league = League(inputs['league_name'])
+    adversary = 1
+    for i in range(inputs['league_size']):
+        if i != inputs['draft_pos'] - 1:
+            league.add(Player("Adversary" + str(adversary), i + 1, "AdversaryTeam" + str(adversary), inputs['team_size'], ["TOV"]))
+            adversary += 1
 
+        else:
+            league.add(Player(inputs['owner_name'], inputs['draft_pos'], inputs['team_name'], inputs['team_size'], inputs['punt']))
+
+
+    print("Punting", end=" ")
+    for i in inputs['punt']:
+        print(i, end=" ")
+    print()
+    print()
+    #set benchmarks
+    analytics = Benchmarks(inputs['picks_left'])
+    analytics.build(df)
+
+    drafted = [0] * 530
+    df.players['PLAYER'] = df.avg['PLAYER']
+    df.players['DRAFTED'] = drafted
+
+    pick = 1
+    #if draft is snaked
+    if inputs['draft_format'] == 1:
+        while pick < inputs['picks_left']:
+            rnd = int(pick/inputs['league_size']) + 1
+            #if (round is odd and user is not picking) OR (round is even and user is not picking)
+            if (pick % inputs['draft_pos'] != 0 and rnd % 2 != 0) or (pick % (abs(inputs['draft_post']-inputs['league_size'])) != 0 and rnd % 2 == 0):
+                name = input("Enter the name of the drafted player: ")
+                players = difflib.get_close_matches(name, df['PLAYER'])
+                while len(players) == 0 or len(players) > 1:
+                    name = input("Re-enter the name of the drafted player: ")
+                    players = difflib.get_close_matches(name, df['PLAYER'])
+                    if len(players) == 1:
+                        break
+                    elif len(players) > 1:
+                        for player in players:
+                            num = 1
+                            print(num, player)
+                            num += 1
+
+                        num = input("Enter the number corresponding to the player that was drafted: ")
+                        while not num.isdigit() or int(num) > len(players):
+                            num = input("Re-enter *JUST* the number corresponding to the player that was drafted: ")
+                            
+                        name = players[num]
+                        players = [name]
+
+                if len(players) == 1:
+                    conf = input("Is " + name + " the drafted player? ")
+                    if conf == "yes":
+                        if rnd % 2 == 0:
+                            pos = (pick % inputs['league_size']) - 1
+                        else:
+                            pos = (abs((pick % inputs['league_size'])-inputs['league_size'])) - 1
+                            
+                        to_pick = Pick(df, df.players.index[df.players['PLAYER']==name], analytics.benchmarks, analytics.std_devs)
+                        to_pick.row_num = df.players.index[df.players['PLAYER']==name]
+                        df.players.loc[to_pick.row_num, 'DRAFTED'] = 1
+                        to_pick.name = name
+                        print(league.players[pos].team.name + " selects " + to_pick.name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
+                        league.players[pos].add(to_pick.row)
+                        pick += 1
+
+            #if round is odd and user is picking OR round is even and user is picking
+            elif (pick % inputs['draft_pos'] == 0 and rnd % 2 != 0) or (pick % (abs(inputs['draft_pos']-inputs['league_size'])) == 0 and rnd % 2 == 0):
+                comparison = []
+                to_pick = Pick(df, df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
+                for row in range(len(df.players)):
+                    if df.players.loc[row, 'DRAFTED'] == 0 and df.players.loc[row, 'PLAYER'] != to_pick.name:
+                        other_pick = Pick(df, row, analytics.benchmarks, analytics.std_devs)
+                        if len(comparison) == 0:
+                            comparison = to_pick.compare(other_pick, league, i)
+                            if comparison[0]:
+                                to_pick = other_pick
+                        else:
+                            new_comp = to_pick.compare(other_pick, league, i)
+                            if new_comp[0] and new_comp[1]:
+                                to_pick = other_pick
+                                comparison = new_comp
+                                
+                            elif new_comp[0]:
+                                to_pick = other_pick
+                                comparison = new_comp
+                                
+                answer = None
+                while answer not in ("yes", "no"):
+                    answer = int(input(to_pick.name + " is your optimum pick! Do you wish to draft him? "))
+                    if answer == "yes":
+                        pos = (abs(inputs['draft_pos']-inputs['league_size'])) - 1
+                        print(league.players[pos].team.name + " selects " + to_pick.name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
+                        league.players[pos].add(to_pick.row)
+                        pick += 1
+                        
+                    elif answer == "no":
+                        draft = input("Enter name of player you wish to draft: ")
+                        players = difflib.get_close_matches(name, df['PLAYER'])
+                        while len(players) == 0 or len(players) > 1:
+                            name = input("Re-enter the name of the player you wish to draft: ")
+                            players = difflib.get_close_matches(name, df['PLAYER'])
+                            if len(players) == 1:
+                                break
+                            elif len(players) > 1:
+                                for player in players:
+                                    num = 1
+                                    print(num, player)
+                                    num += 1
+
+                                num = input("Enter the number corresponding to the player you wish to draft: ")
+                                while not num.isdigit() or int(num) > len(players):
+                                    num = input("Re-enter *JUST* the number corresponding to the player you wish to draft: ")
+                                    
+                                name = players[num]
+                                players = [name]
+
+                        if len(players) == 1:
+                            conf = input("Is " + name + " the right player? ")
+                            if conf == "yes":
+                                to_pick = Pick(df, df.players.index[df.players['PLAYER']==name], analytics.benchmarks, analytics.std_devs)
+                                to_pick.row_num = df.players.index[df.players['PLAYER']==name]
+                                df.players.loc[to_pick.row_num, 'DRAFTED'] = 1
+                                to_pick.name = name
+                                pos = (abs(inputs['draft_pos']-inputs['league_size'])) - 1
+                                print(league.players[pos].team.name + " selects " + to_pick.name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
+                                league.players[pos].add(to_pick.row)
+                                pick += 1
+                        
+                    else:
+                        print("Please enter yes or no.")
+                        
+    #if draft is not snaked
+    else:
+        while pick < inputs['picks_left']:
+            rnd = int(pick/inputs['league_size']) + 1
+            #if user does not pick
+            if pick % inputs['draft_pos'] != 0:
+                name = input("Enter the name of the drafted player: ")
+                players = difflib.get_close_matches(name, df['PLAYER'])
+                while len(players) == 0 or len(players) > 1:
+                    name = input("Re-enter the name of the drafted player: ")
+                    players = difflib.get_close_matches(name, df['PLAYER'])
+                    if len(players) == 1:
+                        break
+                    elif len(players) > 1:
+                        for player in players:
+                            num = 1
+                            print(num, player)
+                            num += 1
+
+                        num = input("Enter the number corresponding to the player that was drafted: ")
+                        while not num.isdigit() or int(num) > len(players):
+                            num = input("Re-enter *JUST* the number corresponding to the player that was drafted: ")
+                            
+                        name = players[num]
+                        players = [name]
+
+                if len(players) == 1:
+                    conf = input("Is " + name + " the drafted player? ")
+                    if conf == "yes":
+                        to_pick = Pick(df, df.players.index[df.players['PLAYER']==name], analytics.benchmarks, analytics.std_devs)
+                        to_pick.row_num = df.players.index[df.players['PLAYER']==name]
+                        to_pick.name = name
+                        pos = (pick % inputs['league_size']) - 1
+                        print(league.players[pos].team.name + " selects " + to_pick.name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
+                        league.players[pos].add(to_pick.row)
+                        pick += 1
+
+            #if user picks
+            else:
+                comparison = []
+                to_pick = Pick(df, df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
+                for row in range(len(df.players)):
+                    if df.players.loc[row, 'DRAFTED'] == 0 and df.players.loc[row, 'PLAYER'] != to_pick.name:
+                        other_pick = Pick(df, row, analytics.benchmarks, analytics.std_devs)
+                        if len(comparison) == 0:
+                            comparison = to_pick.compare(other_pick, league, i)
+                            if comparison[0]:
+                                to_pick = other_pick
+                        else:
+                            new_comp = to_pick.compare(other_pick, league, i)
+                            if new_comp[0] and new_comp[1]:
+                                to_pick = other_pick
+                                comparison = new_comp
+                                
+                            elif new_comp[0]:
+                                to_pick = other_pick
+                                comparison = new_comp
+                answer = None
+                while answer not in ("yes", "no"):
+                    answer = int(input(to_pick.name + " is your optimum pick! Do you wish to draft him? "))
+                    if answer == "yes":
+                        print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in the draft.")
+                        league.players[i].add(to_pick.row)
+                        pick += 1
+                        
+                    elif answer == "no":
+                        draft = input("Enter name of player you wish to draft: ")
+                        players = difflib.get_close_matches(name, df['PLAYER'])
+                        while len(players) == 0 or len(players) > 1:
+                            name = input("Re-enter the name of the player you wish to draft: ")
+                            players = difflib.get_close_matches(name, df['PLAYER'])
+                            if len(players) == 1:
+                                break
+                            elif len(players) > 1:
+                                for player in players:
+                                    num = 1
+                                    print(num, player)
+                                    num += 1
+
+                                num = input("Enter the number corresponding to the player you wish to draft: ")
+                                while not num.isdigit() or int(num) > len(players):
+                                    num = input("Re-enter *JUST* the number corresponding to the player you wish to draft: ")
+                                    
+                                name = players[num]
+                                players = [name]
+
+                        if len(players) == 1:
+                            conf = input("Is " + name + " the right player? ")
+                            if conf == "yes":
+                                to_pick = Pick(df, df.players.index[df.players['PLAYER']==name], analytics.benchmarks, analytics.std_devs)
+                                to_pick.row_num = df.players.index[df.players['PLAYER']==name]
+                                df.players.loc[to_pick.row_num, 'DRAFTED'] = 1
+                                to_pick.name = name
+                                pos = inputs['draft_pos'] - 1
+                                print(league.players[pos].team.name + " selects " + to_pick.name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
+                                league.players[pos].add(to_pick.row)
+                                pick += 1
+                        
+                    else:
+                        print("Please enter yes or no.")
+
+    
 if __name__ == '__main__':   
     start = timeit.default_timer()
     today = datetime.datetime.today()
