@@ -15,6 +15,7 @@ export class DashboardComponent implements OnInit {
   myDraftActive: boolean = false;
   draftSheetActive: boolean = false;
   userActive: boolean = false;
+  infoActive: boolean = false;
 
   constructor(
     private dashboardService: DashboardService,
@@ -47,29 +48,41 @@ export class DashboardComponent implements OnInit {
       this.resultsActive = false;
       this.homeActive = false;
       this.userActive = false;
+      this.infoActive = false;
     } else if (value === 'draftsheet') {
       this.draftSheetActive = true;
       this.myDraftActive = false;
       this.resultsActive = false;
       this.homeActive = false;
       this.userActive = false;
+      this.infoActive = false;
     } else if (value === 'results') {
       this.resultsActive = true;
       this.myDraftActive = false;
       this.draftSheetActive = false;
       this.homeActive = false;
       this.userActive = false;
+      this.infoActive = false;
     } else if (value === 'home') {
       this.homeActive = true;
       this.myDraftActive = false;
       this.draftSheetActive = false;
       this.resultsActive = false;
       this.userActive = false;
+      this.infoActive = false;
     } else if (value === 'user') {
       this.userActive = true;
       this.myDraftActive = false;
       this.draftSheetActive = false;
       this.resultsActive = false;
+      this.infoActive = false;
+      this.homeActive = false;
+    } else if(value === 'info') {
+      this.infoActive = true;
+      this.myDraftActive = false;
+      this.draftSheetActive = false;
+      this.resultsActive = false;
+      this.userActive = false;
       this.homeActive = false;
     }
   }

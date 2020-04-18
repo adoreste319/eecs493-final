@@ -21,6 +21,10 @@
                     <h1 class="text-center">The Sixth Man</h1>
                 </div>
             </div>
+            <div class = "button-fields">
+                <button mat-raised-button class="about-us" (click)="setActive('info')">About Us</button>
+                <button mat-raised-button class="try-me" (click)="setActive('mydraft')">Try It Out</button>
+            </div>
         </div>
         <div class="container" *ngIf="myDraftActive">
             <div class="row">
@@ -50,5 +54,31 @@
                 </div>
             </div>
         </div>
+        <div class= "info-page" *ngIf="infoActive">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class = "text-center" id="info-header">About Us</h1>
+                </div>
+            </div>
+            <div class= "images">
+                <div class = "column">
+                <img src="assets/alexis-img.JPG" class="image" id="alexis-bio" style="width:100%">
+                <div class="middle">
+                    <div class = "text">Alexis Doreste</div>
+                </div>
+                </div>
+                <div class = "column">
+                <img src="assets/brennan-img.JPG" class="image" id="brennan-bio" style="width:100%">
+                <div class="middle-brennan">
+                    <div class = "text-brennan">Brennan Burke</div>
+                </div>
+                </div>
+                <div class = "column">
+                <img src="assets/keara-img.jpeg" class="image" id="keara-bio" style="width:100%">
+                <div class="middle-keara">
+                    <div class = "text-keara">Keara Bird</div>
+                </div>
+                </div>
+            </div>
     </div>
 </div>
