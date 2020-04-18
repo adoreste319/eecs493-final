@@ -807,7 +807,9 @@ def live(inputs, df):
                                 if rnd % 2 != 0:
                                     pos = (pick % inputs['league_size']) - 1
                                 else:
-                                    pos = abs((pick % inputs['league_size']) - inputs['league_size'])
+                                    pos = pick % inputs['league_size']
+                                    if pos != 0:
+                                        pos = abs(pos - inputs['league_size'])
                                 df.players.loc[df.players['PLAYER']==name, 'DRAFTED'] = pick
                                 print(league.players[pos].team.name + " selects " + name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
                                 league.players[pos].add(df.avg.loc[df.avg['PLAYER']==name])
