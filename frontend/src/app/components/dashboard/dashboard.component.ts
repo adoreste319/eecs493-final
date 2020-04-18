@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild} from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Player, Players } from '../../models/dashhboard';
@@ -16,6 +16,7 @@ export class DashboardComponent implements OnInit {
   draftSheetActive: boolean = false;
   userActive: boolean = false;
   infoActive: boolean = false;
+  @ViewChild("middle") middle: ElementRef;
 
   constructor(
     private dashboardService: DashboardService,
@@ -89,13 +90,11 @@ export class DashboardComponent implements OnInit {
 
 
  mouseoverAlexis(){
-  var nameCard = document.getElementById("middle");
-  nameCard.style.opacity = "1";
+  this.middle.nativeElement.style.opacity = "1";
 }
 
  mouseoutAlexis(){
-  var nameCard = document.getElementById("middle");
-  nameCard.style.opacity = "0";
+  this.middle.nativeElement.style.opacity = "0";
 }
 
 }
