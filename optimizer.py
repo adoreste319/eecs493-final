@@ -1,13 +1,11 @@
-import timeit, sys, animation, time, pickle, os, datetime, math, difflib
+import timeit, sys, animation, time, pickle, os, datetime, math, difflib, flask, json, requests
 import pandas as pd
 from statistics import *
 from sportsreference.nba.teams import Teams
 from basketball_reference_scraper.teams import get_roster, get_roster_stats
 from basketball_reference_scraper.players import get_stats
 from basketball_reference_scraper.injury_report import get_injury_report
-import json
-
-import flask
+from flask import request
 
 # app is a single object used by all the code modules in this package
 app = flask.Flask(__name__)  # pylint: disable=invalid-name
@@ -20,18 +18,22 @@ app.config["JSON_AS_ASCII"] = False
 pd.set_option('display.max_rows', None)
 #pd.set_option('float_format', '{:f}'.format)
 
-@app.route('/api/v1/players', methods=["GET"])
+@app.route('/api/v1/players', methods=["GET", "POST"])
 def get_players():
-    context = {}
-    buff = df.players.to_json(orient='records')
-    results=json.loads(buff)
-    print(results)
-    return flask.jsonify(results)
+    if request.method=="GET":
+        context = {}
+        buff = df.avg.to_json(orient='records')
+        results=json.loads(buff)
+        print(results)
+        return flask.jsonify(results)
+    if request.method=="POST":
+        inputs = get_input()
+        print(inputs['league_name'])
+        return 'OK'
 
 class DF:
-    players = pd.DataFrame()
     avg = pd.DataFrame()
-    p36 = pd.DataFrame()
+    #p36 = pd.DataFrame()
     adv = pd.DataFrame()
     injuries = get_injury_report()
     year = 0
@@ -216,9 +218,10 @@ class DF:
                    ---TODO---
            Count the duplicates during player viability process."""
         try:
-            print("Fetching DataSets: NBA per game, NBA per 36, NBA advanced stats")
+            #, NBA per 36,
+            print("Fetching DataSets: NBA per game and NBA advanced stats")
             self.avg = pickle.load(open("df_avg.pickle", "rb"))
-            self.p36 = pickle.load(open("df_36.pickle", "rb"))
+            #self.p36 = pickle.load(open("df_36.pickle", "rb"))
             self.adv = pickle.load(open("df_adv.pickle", "rb"))
 
             print("Ranking and sorting NBA per game dataframe.")
@@ -226,43 +229,45 @@ class DF:
             #print(self.avg)
             #exit()
             pickle.dump(self.avg, open("df_avg.pickle", "wb"))
-            pickle.dump(self.p36, open("df_36.pickle", "wb"))
+            #pickle.dump(self.p36, open("df_36.pickle", "wb"))
             pickle.dump(self.adv, open("df_adv.pickle", "wb"))
             print(self.year, "per game dataset of size", len(self.avg), "fetched successfully.")
-            print(self.year, "per minute dataset of size", len(self.p36), "fetched successfully.")
+            #print(self.year, "per minute dataset of size", len(self.p36), "fetched successfully.")
             print(self.year, "advanced dataset of size", len(self.adv), "fetched successfully.")
             
         except (OSError, IOError) as e:
             print("No pre-existing datasets found.")
-            print("Constructing DataSets: NBA per game, NBA per 36, NBA advanced stats")
+            #, NBA per 36, 
+            print("Constructing DataSets: NBA per game and NBA advanced stats")
             nba_teams = Teams()
             print("   Fetching Milwaukee Bucks " + str(year_in-1) + "-" + str(year_in)[2:] + " per game roster stats.")
             self.avg = pd.DataFrame(get_roster_stats('MIL', year_in, 'PER_GAME'))
-            print("   Fetching Milwaukee Bucks " + str(year_in-1) + "-" + str(year_in)[2:] + " per minute roster stats.")
-            self.p36 = pd.DataFrame(get_roster_stats('MIL', year_in, 'PER_MINUTE'))
+            #print("   Fetching Milwaukee Bucks " + str(year_in-1) + "-" + str(year_in)[2:] + " per minute roster stats.")
+            #self.p36 = pd.DataFrame(get_roster_stats('MIL', year_in, 'PER_MINUTE'))
             print("   Fetching Milwaukee Bucks " + str(year_in-1) + "-" + str(year_in)[2:] + " advanced roster stats.\n")
             self.adv = pd.DataFrame(get_roster_stats('MIL', year_in, 'ADVANCED'))
             for team in nba_teams:
                 if team.abbreviation != 'MIL':
                     print("   Fetching " + team.name + " " + str(year_in-1) + "-" + str(year_in)[2:] + " per game roster stats.")
                     self.avg = self.avg.append(get_roster_stats(team.abbreviation, year_in, 'PER_GAME'), ignore_index = True)
-                    print("   Fetching " + team.name + " " + str(year_in-1) + "-" + str(year_in)[2:] + " per minute roster stats.")
-                    self.p36 = self.p36.append(get_roster_stats(team.abbreviation, year_in, 'PER_MINUTE'), ignore_index = True)
+                    #print("   Fetching " + team.name + " " + str(year_in-1) + "-" + str(year_in)[2:] + " per minute roster stats.")
+                    #self.p36 = self.p36.append(get_roster_stats(team.abbreviation, year_in, 'PER_MINUTE'), ignore_index = True)
                     print("   Fetching " + team.name + " " + str(year_in-1) + "-" + str(year_in)[2:] + " advanced roster stats.\n")
                     self.adv = self.adv.append(get_roster_stats(team.abbreviation, year_in, 'ADVANCED'), ignore_index = True)
 
             self.avg = self.avg.sort_values(by=['PLAYER']).reset_index(drop=True)
-            self.p36 = self.p36.sort_values(by=['PLAYER']).reset_index(drop=True)
+            #self.p36 = self.p36.sort_values(by=['PLAYER']).reset_index(drop=True)
             self.adv = self.adv.sort_values(by=['PLAYER']).reset_index(drop=True)
-            print("   NBA per game dataframe constructed and sorted by player.\n   NBA per 36 dataframe constructed and sorted by player.\n   NBA advanced stats dataframe constructed and sorted by player.\n")
+            #NBA per 36 dataframe constructed and sorted by player.\n   
+            print("   NBA per game dataframe constructed and sorted by player.\n   NBA advanced stats dataframe constructed and sorted by player.\n")
             print("\nFixing player names, setting column types, and removing duplicates in NBA per game dataframe.")
             self.avg = self.fix_names(self.avg)
             self.avg = self.set_types(self.avg)
             self.avg = self.remove_duplicates(self.avg, 'PER_GAME')
-            print("Fixing player names, setting column types, and removing duplicates in NBA per minute dataframe.")
-            self.p36 = self.fix_names(self.p36)
-            self.p36 = self.set_types(self.p36)
-            self.p36 = self.remove_duplicates(self.p36, 'PER_MINUTE')
+            #print("Fixing player names, setting column types, and removing duplicates in NBA per minute dataframe.")
+            #self.p36 = self.fix_names(self.p36)
+            #self.p36 = self.set_types(self.p36)
+            #self.p36 = self.remove_duplicates(self.p36, 'PER_MINUTE')
             print("Fixing player names, setting column types, and removing duplicates in NBA advanced stats dataframe.")
             self.adv = self.fix_names(self.adv)
             self.adv = self.set_types(self.adv)
@@ -272,18 +277,16 @@ class DF:
             self.avg = self.rank(self.avg)
             
             pickle.dump(self.avg, open("df_avg.pickle", "wb"))
-            pickle.dump(self.p36, open("df_36.pickle", "wb"))
+            #pickle.dump(self.p36, open("df_36.pickle", "wb"))
             pickle.dump(self.adv, open("df_adv.pickle", "wb"))
             print(self.year, "per game dataset of size", len(self.avg), "constructed and stored successfully.")
-            print(self.year, "per minute dataset of size", len(self.p36), "constructed and stored successfully.")
+            #print(self.year, "per minute dataset of size", len(self.p36), "constructed and stored successfully.")
             print(self.year, "advanced dataset of size", len(self.adv), "constructed and stored successfully.")
 
     def __init__(self, year_in):
         self.year = year_in
         self.construct_datasets(self.year)
-        self.players['PLAYER'] = self.avg['PLAYER'].values
-        self.players = self.players.drop_duplicates().reset_index(drop=True)
-        self.players['DRAFTED'] = 0
+        self.avg['DRAFTED'] = [0] * 530
 
 class Team:
 
@@ -469,54 +472,56 @@ def get_input():
 
     inputs = {}
 
-    inputs['league_name'] = input("What is your league name? ")
+    inputs['league_name'] = request.form.get('league_name')#input("What is your league name? ")
 
-    inputs['owner_name'] = input("What is your name? ")
+    inputs['owner_name'] = request.form.get('owner_name')#input("What is your name? ")
     
-    inputs['team_name'] = input("What is your team name? ")
+    inputs['team_name'] = request.form.get('team_name')#input("What is your team name? ")
     
-    inputs['mock'] = int(input("Would you like to run a mock draft or a live optimization? (Live=1, Mock=0): "))
-    while isinstance(inputs['mock'], int) == False or inputs['mock'] > 1 or inputs['mock'] < 0:
-        inputs['mock'] = int(input("Answer 1 for Live or 0 for Mock: "))
+    inputs['mock'] = request.form.get('mock')#int(input("Would you like to run a mock draft or a live optimization? (Live=1, Mock=0): "))
+    while inputs['mock'] not in ("yes", "no"):
+        print("Enter either yes or no.")
+        inputs['mock'] = request.form.get('mock')#int(input("Answer 1 for Live or 0 for Mock: "))
 
     inputs['scoring_format'] = 1 #int(input("What is your league's scoring format? (1=H2H, 2=Points, 3=Roto) "))
-    while isinstance(inputs['scoring_format'], int) == False or inputs['scoring_format'] > 3 or inputs['scoring_format'] < 1:
-        inputs['scoring_format'] = int(input("Answer 1 for head-to-head, 2 for points, or 3 for roto: "))
+    #while isinstance(inputs['scoring_format'], int) == False or inputs['scoring_format'] > 3 or inputs['scoring_format'] < 1:
+        #inputs['scoring_format'] = int(input("Answer 1 for head-to-head, 2 for points, or 3 for roto: "))
     
     inputs['cats'] = 9 #int(input("How many categories does your league have?"))
-    while isinstance(inputs['cats'], int) == False or inputs['cats'] > 15 or inputs['cats'] < 8:
-        inputs['cats'] = int(input("Supported categories are between 8 and 15, re-enter: "))
+    #while isinstance(inputs['cats'], int) == False or inputs['cats'] > 15 or inputs['cats'] < 8:
+        #inputs['cats'] = int(input("Supported categories are between 8 and 15, re-enter: "))
         
-    inputs['draft_format'] = 1 #int(input("Is your draft snaked? (1=Yes, 0=No) "))
-    while isinstance(inputs['draft_format'], int) == False or inputs['draft_format'] > 1 or inputs['draft_format'] < 0:
-        inputs['draft_format'] = int(input("Answer 1 for yes and 0 for no: "))
+    inputs['draft_format'] = request.form.get('draft_format')#1 #int(input("Is your draft snaked? (1=Yes, 0=No) "))
+    while inputs['draft_format'] not in ("snake", "standard"):
+        print("Enter either snake or standard.")
+        inputs['draft_format'] = request.form.get('draft_format')#int(input("Answer 1 for yes and 0 for no: "))
 
-    inputs['league_size'] = int(input("Enter league size: "))
+    inputs['league_size'] = int(request.form.get('league_size'))#int(input("Enter league size: "))
     while isinstance(inputs['league_size'], int) == False or inputs['league_size'] < 8 or inputs['league_size'] > 20 or inputs['league_size'] % 2 != 0:
         print("Supported league sizes are even numbers between 8 and 20.")
-        inputs['league_size'] = int(input("Re-enter league size: "))
+        inputs['league_size'] = int(request.form.get('league_size'))#int(input("Re-enter league size: "))
 
-    inputs['draft_pos'] = int(input("Enter draft position: "))
+    inputs['draft_pos'] = int(request.form.get('draft_pos'))#int(input("Enter draft position: "))
     while isinstance(inputs['draft_pos'], int) == False or inputs['draft_pos'] < 0 or inputs['draft_pos'] > inputs['league_size']:
         print("Invalid draft position.")
-        inputs['draft_pos'] = int(input("Re-enter draft position: "))
+        inputs['draft_pos'] = int(request.form.get('draft_pos'))#int(input("Re-enter draft position: "))
 
-    inputs['team_size'] = int(input("Enter team size: "))
+    inputs['team_size'] = int(request.form.get('team_size'))#int(input("Enter team size: "))
     while isinstance(inputs['team_size'], int) == False or inputs['team_size'] < 8 or inputs['team_size'] > 20:
         print("Unsupported team size: 8 <= size <= 20")
-        inputs['team_size'] = int(input("Re-enter team size: "))
+        inputs['team_size'] = int(request.form.get('team_size'))#int(input("Re-enter team size: "))
 
-    inputs['keeper'] = int(input("Is it a keeper league? (Yes=1, No=0): "))
-    while isinstance(inputs['keeper'], int) == False or inputs['keeper'] > 1 or inputs['keeper'] < 0:
-        inputs['keeper'] = int(input("Answer 1 for Yes or 0 for No: "))
+    #inputs['keeper'] = int(input("Is it a keeper league? (Yes=1, No=0): "))
+    #while isinstance(inputs['keeper'], int) == False or inputs['keeper'] > 1 or inputs['keeper'] < 0:
+        #inputs['keeper'] = int(input("Answer 1 for Yes or 0 for No: "))
         
-    if inputs['keeper']:
-        inputs['keeper_count'] = int(input("How many keepers are there per team? "))
-        while isinstance(inputs['keeper_count'], int) == False or inputs['keeper_count'] >= 0 or inputs['keeper_count'] < inputs['team_size']:
-            inputs['keeper_count'] = int(input("Keeper count must be between 0 and the size of your team: "))
+    #if inputs['keeper']:
+        #inputs['keeper_count'] = int(input("How many keepers are there per team? "))
+        #while isinstance(inputs['keeper_count'], int) == False or inputs['keeper_count'] >= 0 or inputs['keeper_count'] < inputs['team_size']:
+            #inputs['keeper_count'] = int(input("Keeper count must be between 0 and the size of your team: "))
 
-    else:
-        inputs['keeper_count'] = 0
+    #else:
+    inputs['keeper_count'] = 0
     
     if inputs['keeper_count'] != inputs['team_size']:
         return inputs
@@ -546,13 +551,13 @@ def setup_draft(inputs, df):
         elif "TOV" not in inputs['punt']:
             inputs['punt'] += ["TOV"]
       
-    if inputs['mock']:
-        mock(inputs, df)
+    if inputs['mock'] == "yes":
+        mock()
 
     else:
-        live(inputs, df)
+        live()
     
-def mock(inputs, df):
+def mock():
     #set mock participants and draft order
     league = League(inputs['league_name'])
     comp = 1
@@ -576,17 +581,14 @@ def mock(inputs, df):
     print()
     count = 1            
     rnd = 1
-    drafted = [0] * 530
-    df.players['PLAYER'] = df.avg['PLAYER']
-    df.players['DRAFTED'] = drafted
     while rnd < inputs['rounds']:
         #if draft is snaked and round is even
-        if inputs['draft_format'] == 1 and rnd % 2 == 0:
+        if inputs['draft_format'] == "snake" and rnd % 2 == 0:
             for i in range(inputs['league_size'] - 1, -1, -1):
                 comparison = []
-                to_pick = Pick(df, df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
-                for row in range(len(df.players)):
-                    if df.players.loc[row, 'DRAFTED'] == 0 and df.players.loc[row, 'PLAYER'] != to_pick.name:
+                to_pick = Pick(df, df.avg.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
+                for row in range(len(df.avg)):
+                    if df.avg.loc[row, 'DRAFTED'] == 0 and df.avg.loc[row, 'PLAYER'] != to_pick.name:
                         other_pick = Pick(df, row, analytics.benchmarks, analytics.std_devs)
                         if len(comparison) == 0:
                             comparison = to_pick.compare(other_pick, league, i)
@@ -608,18 +610,18 @@ def mock(inputs, df):
                     while answer != "yes":
                         answer = input(to_pick.name + " is your optimum pick! Do you wish to draft him? ")
                         if answer == "yes":
-                            df.players.loc[df.players['PLAYER']==to_pick.name, 'DRAFTED'] = count
+                            df.avg.loc[df.avg['PLAYER']==to_pick.name, 'DRAFTED'] = count
                             print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
                             league.players[i].add(to_pick.row)
                             
                         elif answer == "no":
                             name = input("Enter name of player you wish to draft: ")
-                            players = difflib.get_close_matches(name, df.players['PLAYER'])
+                            players = difflib.get_close_matches(name, df.avg['PLAYER'])
                             while len(players) == 0 or len(players) > 1:
                                 
                                 if len(players) == 1:
                                     name = players[0]
-                                    if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                    if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                         break
                                     else:
                                         print("Player already drafted.", end=" ")
@@ -635,20 +637,20 @@ def mock(inputs, df):
                                         
                                     name = players[int(num)-1]
                                     players = [name]
-                                    if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                    if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                         break
                                     else:
                                         print("Player already drafted.", end=" ")
 
                                 name = input("Re-enter the name of the player you wish to draft: ")
-                                players = difflib.get_close_matches(name, df.players['PLAYER'])
+                                players = difflib.get_close_matches(name, df.avg['PLAYER'])
 
                             if len(players) == 1:
                                 conf = input("Is " + players[0] + " the right player? ")
                                 if conf == "yes":
                                     name = players[0]
-                                    if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
-                                        df.players.loc[df.players['PLAYER']==name, 'DRAFTED'] = count
+                                    if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                        df.avg.loc[df.avg['PLAYER']==name, 'DRAFTED'] = count
                                         print(league.players[i].team.name + " selects " + name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
                                         league.players[i].add(df.avg.loc[df.avg['PLAYER']==name])
                                         answer = "yes"
@@ -660,7 +662,7 @@ def mock(inputs, df):
                             print("Please enter yes or no.")
                         
                 else:
-                    df.players.loc[df.players['PLAYER']==to_pick.name, 'DRAFTED'] = count
+                    df.avg.loc[df.avg['PLAYER']==to_pick.name, 'DRAFTED'] = count
                     print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
                     league.players[i].add(to_pick.row)
 
@@ -669,9 +671,9 @@ def mock(inputs, df):
         else:
             for i in range(inputs['league_size']):
                 comparison = []
-                to_pick = Pick(df, df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
-                for row in range(len(df.players)):
-                    if df.players.loc[row, 'DRAFTED'] == 0 and df.players.loc[row, 'PLAYER'] != to_pick.name:
+                to_pick = Pick(df, df.avg.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
+                for row in range(len(df.avg)):
+                    if df.avg.loc[row, 'DRAFTED'] == 0 and df.avg.loc[row, 'PLAYER'] != to_pick.name:
                         other_pick = Pick(df, row, analytics.benchmarks, analytics.std_devs)
                         if len(comparison) == 0:
                             comparison = to_pick.compare(other_pick, league, i)
@@ -692,18 +694,18 @@ def mock(inputs, df):
                     while answer != "yes":
                         answer = input(to_pick.name + " is your optimum pick! Do you wish to draft him? ")
                         if answer == "yes":
-                            df.players.loc[df.players['PLAYER']==to_pick.name, 'DRAFTED'] = count
+                            df.avg.loc[df.avg['PLAYER']==to_pick.name, 'DRAFTED'] = count
                             print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
                             league.players[i].add(to_pick.row)
                             
                         elif answer == "no":
                             name = input("Enter name of player you wish to draft: ")
-                            players = difflib.get_close_matches(name, df.players['PLAYER'])
+                            players = difflib.get_close_matches(name, df.avg['PLAYER'])
                             while len(players) == 0 or len(players) > 1:
                                 
                                 if len(players) == 1:
                                     name = players[0]
-                                    if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                    if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                         break
                                     else:
                                         print("Player already drafted.", end=" ")
@@ -719,20 +721,20 @@ def mock(inputs, df):
                                         
                                     name = players[int(num)-1]
                                     players = [name]
-                                    if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                    if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                         break
                                     else:
                                         print("Player already drafted.", end=" ")
 
                                 name = input("Re-enter the name of the player you wish to draft: ")
-                                players = difflib.get_close_matches(name, df.players['PLAYER'])
+                                players = difflib.get_close_matches(name, df.avg['PLAYER'])
 
                             if len(players) == 1:
                                 conf = input("Is " + players[0] + " the right player? ")
                                 if conf == "yes":
                                     name = players[0]
-                                    if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
-                                        df.players.loc[df.players['PLAYER']==name, 'DRAFTED'] = count
+                                    if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                        df.avg.loc[df.avg['PLAYER']==name, 'DRAFTED'] = count
                                         print(league.players[i].team.name + " selects " + name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
                                         league.players[i].add(df.avg.loc[df.avg['PLAYER']==name])
                                         answer = "yes"
@@ -744,7 +746,7 @@ def mock(inputs, df):
                             print("Please enter yes or no.")
                         
                 else:
-                    df.players.loc[df.players['PLAYER']==to_pick.name, 'DRAFTED'] = count
+                    df.avg.loc[df.avg['PLAYER']==to_pick.name, 'DRAFTED'] = count
                     print(league.players[i].team.name + " selects " + to_pick.name + " with pick #" + str(count) + " in round " + str(rnd) + " in the draft.")
                     league.players[i].add(to_pick.row)
 
@@ -752,7 +754,7 @@ def mock(inputs, df):
 
         rnd += 1
     
-def live(inputs, df):
+def live():
     league = League(inputs['league_name'])
     adversary = 1
     for i in range(inputs['league_size']):
@@ -773,13 +775,9 @@ def live(inputs, df):
     analytics = Benchmarks(inputs['picks_left'])
     analytics.build(df)
 
-    drafted = [0] * 530
-    df.players['PLAYER'] = df.avg['PLAYER']
-    df.players['DRAFTED'] = drafted
-
     pick = 1
     #if draft is snaked
-    if inputs['draft_format'] == 1:
+    if inputs['draft_format'] == "snake":
         while pick < inputs['picks_left']:
             rnd = int((pick-1)/inputs['league_size']) + 1
             #if (round is odd and user is not picking) OR (round is even and user is not picking)
@@ -787,11 +785,11 @@ def live(inputs, df):
                 answer = None
                 while answer != "yes":
                     name = input("Enter the name of the drafted player: ")
-                    players = difflib.get_close_matches(name, df.players['PLAYER'])
+                    players = difflib.get_close_matches(name, df.avg['PLAYER'])
                     while len(players) == 0 or len(players) > 1:
                         if len(players) == 1:
                             name = players[0]
-                            if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                            if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                 break
                             else:
                                 print("Player already drafted.", end=" ")
@@ -807,26 +805,26 @@ def live(inputs, df):
                                 
                             name = players[int(num)-1]
                             players = [name]
-                            if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                            if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                 break
                             else:
                                 print("Player already drafted.", end=" ")
 
                         name = input("Re-enter the name of the drafted player: ")
-                        players = difflib.get_close_matches(name, df.players['PLAYER'])
+                        players = difflib.get_close_matches(name, df.avg['PLAYER'])
 
                     if len(players) == 1:
                         conf = input("Is " + players[0] + " the right player? ")
                         if conf == "yes":
                             name = players[0]
-                            if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                            if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                 if rnd % 2 != 0:
                                     pos = (pick % inputs['league_size']) - 1
                                 else:
                                     pos = pick % inputs['league_size']
                                     if pos != 0:
                                         pos = abs(pos - inputs['league_size'])
-                                df.players.loc[df.players['PLAYER']==name, 'DRAFTED'] = pick
+                                df.avg.loc[df.avg['PLAYER']==name, 'DRAFTED'] = pick
                                 print(league.players[pos].team.name + " selects " + name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
                                 league.players[pos].add(df.avg.loc[df.avg['PLAYER']==name])
                                 answer = "yes"
@@ -838,9 +836,9 @@ def live(inputs, df):
             #if round is odd and user is picking OR round is even and user is picking
             elif (pick % inputs['league_size'] == inputs['draft_pos'] and rnd % 2 != 0) or (pick % inputs['league_size'] == (abs(inputs['draft_pos']-inputs['league_size']) + 1) and rnd % 2 == 0):
                 comparison = []
-                to_pick = Pick(df, df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
-                for row in range(len(df.players)):
-                    if df.players.loc[row, 'DRAFTED'] == 0 and df.players.loc[row, 'PLAYER'] != to_pick.name:
+                to_pick = Pick(df, df.avg.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
+                for row in range(len(df.avg)):
+                    if df.avg.loc[row, 'DRAFTED'] == 0 and df.avg.loc[row, 'PLAYER'] != to_pick.name:
                         other_pick = Pick(df, row, analytics.benchmarks, analytics.std_devs)
                         if len(comparison) == 0:
                             comparison = to_pick.compare(other_pick, league, inputs['draft_pos'])
@@ -860,19 +858,19 @@ def live(inputs, df):
                 while answer != "yes":
                     answer = input(to_pick.name + " is your optimum pick! Do you wish to draft him? ")
                     if answer == "yes":
-                        df.players.loc[df.players['PLAYER']==to_pick.name, 'DRAFTED'] = pick
+                        df.avg.loc[df.avg['PLAYER']==to_pick.name, 'DRAFTED'] = pick
                         print(league.players[inputs['draft_pos'] - 1].team.name + " selects " + to_pick.name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
                         league.players[inputs['draft_pos'] - 1].add(to_pick.row)
                         pick += 1
                         
                     elif answer == "no":
                         name = input("Enter name of player you wish to draft: ")
-                        players = difflib.get_close_matches(name, df.players['PLAYER'])
+                        players = difflib.get_close_matches(name, df.avg['PLAYER'])
                         while len(players) == 0 or len(players) > 1:
                             
                             if len(players) == 1:
                                 name = players[0]
-                                if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                     break
                                 else:
                                     print("Player already drafted.", end=" ")
@@ -888,20 +886,20 @@ def live(inputs, df):
                                     
                                 name = players[int(num)-1]
                                 players = [name]
-                                if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                     break
                                 else:
                                     print("Player already drafted.", end=" ")
 
                             name = input("Re-enter the name of the player you wish to draft: ")
-                            players = difflib.get_close_matches(name, df.players['PLAYER'])
+                            players = difflib.get_close_matches(name, df.avg['PLAYER'])
 
                         if len(players) == 1:
                             conf = input("Is " + players[0] + " the right player? ")
                             if conf == "yes":
                                 name = players[0]
-                                if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
-                                    df.players.loc[df.players['PLAYER']==name, 'DRAFTED'] = pick
+                                if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                    df.avg.loc[df.avg['PLAYER']==name, 'DRAFTED'] = pick
                                     print(league.players[inputs['draft_pos'] - 1].team.name + " selects " + name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
                                     league.players[inputs['draft_pos'] - 1].add(df.avg.loc[df.avg['PLAYER']==name])
                                     answer = "yes"
@@ -922,11 +920,11 @@ def live(inputs, df):
                 answer = None
                 while answer != "yes":
                     name = input("Enter the name of the drafted player: ")
-                    players = difflib.get_close_matches(name, df.players['PLAYER'])
+                    players = difflib.get_close_matches(name, df.avg['PLAYER'])
                     while len(players) == 0 or len(players) > 1:
                         if len(players) == 1:
                             name = players[0]
-                            if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                            if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                 break
                             else:
                                 print("Player already drafted.", end=" ")
@@ -942,21 +940,21 @@ def live(inputs, df):
                                 
                             name = players[int(num)-1]
                             players = [name]
-                            if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                            if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                 break
                             else:
                                 print("Player already drafted.", end=" ")
 
                         name = input("Re-enter the name of the drafted player: ")
-                        players = difflib.get_close_matches(name, df.players['PLAYER'])
+                        players = difflib.get_close_matches(name, df.avg['PLAYER'])
 
                     if len(players) == 1:
                         conf = input("Is " + players[0] + " the right player? ")
                         if conf == "yes":
                             name = players[0]
-                            if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                            if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                 pos = (pick % inputs['league_size']) - 1
-                                df.players.loc[df.players['PLAYER']==name, 'DRAFTED'] = pick
+                                df.avg.loc[df.avg['PLAYER']==name, 'DRAFTED'] = pick
                                 print(league.players[pos].team.name + " selects " + name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
                                 league.players[pos].add(df.avg.loc[df.avg['PLAYER']==name])
                                 answer = "yes"
@@ -968,9 +966,9 @@ def live(inputs, df):
             #if user picks
             else:
                 comparison = []
-                to_pick = Pick(df, df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
-                for row in range(len(df.players)):
-                    if df.players.loc[row, 'DRAFTED'] == 0 and df.players.loc[row, 'PLAYER'] != to_pick.name:
+                to_pick = Pick(df, df.avg.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
+                for row in range(len(df.avg)):
+                    if df.avg.loc[row, 'DRAFTED'] == 0 and df.avg.loc[row, 'PLAYER'] != to_pick.name:
                         other_pick = Pick(df, row, analytics.benchmarks, analytics.std_devs)
                         if len(comparison) == 0:
                             comparison = to_pick.compare(other_pick, league, inputs['draft_pos'])
@@ -989,19 +987,19 @@ def live(inputs, df):
                 while answer != "yes":
                     answer = input(to_pick.name + " is your optimum pick! Do you wish to draft him? ")
                     if answer == "yes":
-                        df.players.loc[df.players['PLAYER']==to_pick.name, 'DRAFTED'] = pick
+                        df.avg.loc[df.avg['PLAYER']==to_pick.name, 'DRAFTED'] = pick
                         print(league.players[inputs['draft_pos'] - 1].team.name + " selects " + to_pick.name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
                         league.players[inputs['draft_pos'] - 1].add(to_pick.row)
                         pick += 1
                         
                     elif answer == "no":
                         name = input("Enter name of player you wish to draft: ")
-                        players = difflib.get_close_matches(name, df.players['PLAYER'])
+                        players = difflib.get_close_matches(name, df.avg['PLAYER'])
                         while len(players) == 0 or len(players) > 1:
                             
                             if len(players) == 1:
                                 name = players[0]
-                                if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                     break
                                 else:
                                     print("Player already drafted.", end=" ")
@@ -1017,20 +1015,20 @@ def live(inputs, df):
                                     
                                 name = players[int(num)-1]
                                 players = [name]
-                                if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
                                     break
                                 else:
                                     print("Player already drafted.", end=" ")
 
                             name = input("Re-enter the name of the player you wish to draft: ")
-                            players = difflib.get_close_matches(name, df.players['PLAYER'])
+                            players = difflib.get_close_matches(name, df.avg['PLAYER'])
 
                         if len(players) == 1:
                             conf = input("Is " + players[0] + " the right player? ")
                             if conf == "yes":
                                 name = players[0]
-                                if df.players.loc[pd.Index(df.players['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
-                                    df.players.loc[df.players['PLAYER']==name, 'DRAFTED'] = pick
+                                if df.avg.loc[pd.Index(df.avg['PLAYER']).get_loc(name), 'DRAFTED'] == 0:
+                                    df.avg.loc[df.avg['PLAYER']==name, 'DRAFTED'] = pick
                                     print(league.players[inputs['draft_pos'] - 1].team.name + " selects " + name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
                                     league.players[inputs['draft_pos'] - 1].add(df.avg.loc[df.avg['PLAYER']==name])
                                     answer = "yes"
@@ -1042,25 +1040,29 @@ def live(inputs, df):
                     else:
                         print("Please enter yes or no.")
 
+today = datetime.datetime.today()
+
+if today.month >= 7:
+    df = DF(today.year)
+else:
+    df = DF(today.year - 1)
     
 if __name__ == '__main__':   
     start = timeit.default_timer()
-    today = datetime.datetime.today()
-    
-    if today.month >= 7:
-        df = DF(today.year)
-    else:
-        df = DF(today.year - 1)
-        
+       
     print('\nWelcome to the Sixth Man, the fantasy basketball draft optimizer!')
     #print('Answer the following prompts to get started.')
     #inputs = get_input()
-    inputs = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': 0,
-              'scoring_format': 1, 'cats': 9, 'draft_format': 1, 'league_size': 10,
-              'draft_pos': 8, 'team_size': 15, 'keeper': 0, 'keeper_count': 0}
+    #inputs = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': 0,
+    #         'scoring_format': 1, 'cats': 9, 'draft_format': 1, 'league_size': 10,
+    #         'draft_pos': 8, 'team_size': 15, 'keeper': 0, 'keeper_count': 0}
     #setup_draft(inputs, df)
     print('Thanks for using the Sixth Man Fantasy Hoops Optimizer, good luck!')
-    print(df.players[df.players['DRAFTED'] != 0].sort_values(by="DRAFTED"))
+    print(df.avg[df.avg['DRAFTED'] != 0].sort_values(by="DRAFTED"))
     stop = timeit.default_timer()
     print('Time: ', stop - start)
-    app.run(port=8000)
+    posted = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': "yes", 'draft_format': 'snake', 'league_size': 10,'draft_pos': 8, 'team_size': 15}
+    #app.run(port=8000)
+    x = requests.post('http://127.0.0.1:5000/api/v1/players', data=posted)
+    print(x.text)
+    
