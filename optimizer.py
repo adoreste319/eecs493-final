@@ -783,7 +783,7 @@ def live(inputs, df):
         while pick < inputs['picks_left']:
             rnd = int((pick-1)/inputs['league_size']) + 1
             #if (round is odd and user is not picking) OR (round is even and user is not picking)
-            if (pick % inputs['draft_pos'] != 0 and rnd % 2 != 0) or (pick % inputs['league_size'] != (abs(inputs['draft_pos']-inputs['league_size']) - 1) and rnd % 2 == 0):
+            if (pick % inputs['league_size'] != inputs['draft_pos'] and rnd % 2 != 0) or (pick % inputs['league_size'] != (abs(inputs['draft_pos']-inputs['league_size']) + 1) and rnd % 2 == 0):
                 answer = None
                 while answer != "yes":
                     name = input("Enter the name of the drafted player: ")
@@ -823,7 +823,9 @@ def live(inputs, df):
                                 if rnd % 2 != 0:
                                     pos = (pick % inputs['league_size']) - 1
                                 else:
-                                    pos = abs((pick % inputs['league_size']) - inputs['league_size'])
+                                    pos = pick % inputs['league_size']
+                                    if pos != 0:
+                                        pos = abs(pos - inputs['league_size'])
                                 df.players.loc[df.players['PLAYER']==name, 'DRAFTED'] = pick
                                 print(league.players[pos].team.name + " selects " + name + " with pick #" + str(pick) + " in round " + str(rnd) + " in the draft.")
                                 league.players[pos].add(df.avg.loc[df.avg['PLAYER']==name])
@@ -834,7 +836,7 @@ def live(inputs, df):
                                 answer = "no"
 
             #if round is odd and user is picking OR round is even and user is picking
-            elif (pick % inputs['draft_pos'] == 0 and rnd % 2 != 0) or (pick % inputs['league_size'] == (abs(inputs['draft_pos']-inputs['league_size']) - 1) and rnd % 2 == 0):
+            elif (pick % inputs['league_size'] == inputs['draft_pos'] and rnd % 2 != 0) or (pick % inputs['league_size'] == (abs(inputs['draft_pos']-inputs['league_size']) + 1) and rnd % 2 == 0):
                 comparison = []
                 to_pick = Pick(df, df.players.DRAFTED.idxmin(), analytics.benchmarks, analytics.std_devs)
                 for row in range(len(df.players)):

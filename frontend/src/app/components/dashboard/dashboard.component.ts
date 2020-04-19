@@ -16,7 +16,10 @@ export class DashboardComponent implements OnInit {
   draftSheetActive: boolean = false;
   userActive: boolean = false;
   infoActive: boolean = false;
-  @ViewChild("middle") middle: ElementRef;
+  @ViewChild("middleA") middleA: ElementRef;
+  @ViewChild("middleB") middleB: ElementRef;
+  @ViewChild("middleK") middleK: ElementRef;
+
 
   constructor(
     private dashboardService: DashboardService,
@@ -89,12 +92,33 @@ export class DashboardComponent implements OnInit {
   }
 
 
+
+
  mouseoverAlexis(){
-  this.middle.nativeElement.style.opacity = "1";
+  this.middleA.nativeElement.style.opacity = "1";
 }
 
  mouseoutAlexis(){
-  this.middle.nativeElement.style.opacity = "0";
+  this.middleA.nativeElement.style.opacity = "0";
 }
+
+
+ mouseoverBrennan(){
+  this.middleB.nativeElement.style.opacity = "1";
+}
+
+ mouseoutBrennan(){
+  this.middleB.nativeElement.style.opacity = "0";
+}
+
+
+ mouseoverKeara(){
+  this.middleK.nativeElement.style.opacity = "1";
+}
+
+ mouseoutKeara(){
+  this.middleK.nativeElement.style.opacity = "0";
+}
+
 
 }
