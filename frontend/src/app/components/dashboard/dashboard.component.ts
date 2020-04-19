@@ -9,7 +9,7 @@ import { Player, Players } from '../../models/dashhboard';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-  players: Players = new Players();
+  players: Array<Object> = [];
   homeActive: boolean = true;
   resultsActive: boolean = false;
   myDraftActive: boolean = false;
@@ -31,7 +31,26 @@ export class DashboardComponent implements OnInit {
     console.log("Loading page...");
     this.dashboardService.getPlayers().then(res => {
       console.log(res);
-      this.players = res;
+      for (let i = 0; i < res.length; ++i) {
+        let player = {};
+        player["index"] = i;
+        player["player"] = res[i].PLAYER;
+        player["pos"] = res[i].POS;
+        player["age"] = res[i].AGE;
+        player["team"] = res[i].TEAM;
+        player["fg%"] = res[i]["FG%"];
+        player["ft%"] = res[i]["FT%"];
+        player["3P"] = res[i]["3P"];
+        player["pts"] = res[i].PTS;
+        player["trb"] = res[i].TRB;
+        player["ast"] = res[i].AST;
+        player["stl"] = res[i].STL;
+        player["tov"] = res[i].TOV;
+        player["drafted"] = res[i].DRAFTED;
+        this.players.push(player);
+      }
+      console.log(this.players);
+      //this.players = res;
     });
   }
 

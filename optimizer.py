@@ -6,9 +6,11 @@ from basketball_reference_scraper.teams import get_roster, get_roster_stats
 from basketball_reference_scraper.players import get_stats
 from basketball_reference_scraper.injury_report import get_injury_report
 from flask import request
+from flask_cors import CORS
 
 # app is a single object used by all the code modules in this package
 app = flask.Flask(__name__)  # pylint: disable=invalid-name
+CORS(app)
 app.config["DEBUG"] = True
 app.config["JSON_AS_ASCII"] = False
 #from decimal import *
@@ -1062,7 +1064,7 @@ if __name__ == '__main__':
     stop = timeit.default_timer()
     print('Time: ', stop - start)
     posted = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': "yes", 'draft_format': 'snake', 'league_size': 10,'draft_pos': 8, 'team_size': 15}
-    #app.run(port=8000)
-    x = requests.post('http://127.0.0.1:5000/api/v1/players', data=posted)
+    app.run(port=8000)
+    #x = requests.post('http://127.0.0.1:5000/api/v1/players', data=posted)
     print(x.text)
     
