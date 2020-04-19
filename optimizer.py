@@ -29,9 +29,17 @@ def get_players():
         print(results)
         return flask.jsonify(results)
     if request.method=="POST":
-        inputs = get_input()
-        print(inputs['league_name'])
-        return 'OK'
+        #drafted column interactivity incomplete
+        buff = df.avg.to_json(orient='records')
+        results=json.loads(buff)
+        print(results)
+        return flask.jsonify(results)
+
+@app.route('/api/v1/', methods="POST")
+def inputs():
+    inputs = get_input()
+    print(inputs)
+    return 'OK'
 
 class DF:
     avg = pd.DataFrame()
@@ -523,13 +531,7 @@ def get_input():
             #inputs['keeper_count'] = int(input("Keeper count must be between 0 and the size of your team: "))
 
     #else:
-    inputs['keeper_count'] = 0
-    
-    if inputs['keeper_count'] != inputs['team_size']:
-        return inputs
-    
-    else:
-        print("Weird league, you're all set!")
+    return inputs
 
 def setup_draft(inputs, df):
     inputs['rounds'] = inputs['team_size'] - inputs['keeper_count']
