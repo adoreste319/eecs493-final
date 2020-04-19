@@ -5,12 +5,28 @@ from sportsreference.nba.teams import Teams
 from basketball_reference_scraper.teams import get_roster, get_roster_stats
 from basketball_reference_scraper.players import get_stats
 from basketball_reference_scraper.injury_report import get_injury_report
+import json
+
+import flask
+
+# app is a single object used by all the code modules in this package
+app = flask.Flask(__name__)  # pylint: disable=invalid-name
+app.config["DEBUG"] = True
+app.config["JSON_AS_ASCII"] = False
 #from decimal import *
 #program_context = Context(prec=12)
 #setcontext(program_context)
 #pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 #pd.set_option('float_format', '{:f}'.format)
+
+@app.route('/api/v1/players', methods=["GET"])
+def get_players():
+    context = {}
+    buff = df.players.to_json(orient='records')
+    results=json.loads(buff)
+    print(results)
+    return flask.jsonify(results)
 
 class DF:
     players = pd.DataFrame()
@@ -1040,8 +1056,9 @@ if __name__ == '__main__':
     inputs = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': 0,
               'scoring_format': 1, 'cats': 9, 'draft_format': 1, 'league_size': 10,
               'draft_pos': 8, 'team_size': 15, 'keeper': 0, 'keeper_count': 0}
-    setup_draft(inputs, df)
+    #setup_draft(inputs, df)
     print('Thanks for using the Sixth Man Fantasy Hoops Optimizer, good luck!')
     print(df.players[df.players['DRAFTED'] != 0].sort_values(by="DRAFTED"))
     stop = timeit.default_timer()
     print('Time: ', stop - start)
+    app.run(port=8000)
