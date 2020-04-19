@@ -27,9 +27,17 @@ def get_players():
         print(results)
         return flask.jsonify(results)
     if request.method=="POST":
-        inputs = get_input()
-        print(inputs)
-        return 'OK'
+        #drafted column interactivity incomplete
+        buff = df.avg.to_json(orient='records')
+        results=json.loads(buff)
+        print(results)
+        return flask.jsonify(results)
+
+@app.route('/api/v1/', methods="POST")
+def inputs():
+    inputs = get_input()
+    print(inputs)
+    return 'OK'
 
 class DF:
     avg = pd.DataFrame()
