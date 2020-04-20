@@ -22,6 +22,7 @@ export class DashboardComponent implements OnInit {
   @ViewChild("middleB") middleB: ElementRef;
   @ViewChild("middleK") middleK: ElementRef;
   inputModel: Inputs = new Inputs();
+  inputsSet: boolean = false;
   draftType: String = "mock";
   scoringFormat: String = "h2h";
   draftFormat: String = "snake";
@@ -77,6 +78,8 @@ export class DashboardComponent implements OnInit {
     };
     this.dashboardService.getInput(data).then(res => {
       console.log(res);
+      this.inputsSet = true;
+      console.log(this.inputsSet);
     });
   }
 

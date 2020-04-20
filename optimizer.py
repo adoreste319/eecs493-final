@@ -37,11 +37,13 @@ def get_players():
 
 @app.route('/api/v1/inputs', methods=["POST"])
 def inputs():
-    inputs = json.dumps(request.get_json())
+    global inputs 
+    inputs = request.get_json()
+    print(inputs)
     #get_input()
     setup_draft()
     #print(inputs)
-    return 'OK'
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
 
 #@app.route('/api/v1/mock', methods=["GET"])
 #def mock_draft():
@@ -548,6 +550,7 @@ def get_input():
             #inputs['keeper_count'] = int(input("Keeper count must be between 0 and the size of your team: "))
 
 def setup_draft():
+    global inputs
     inputs['rounds'] = inputs['team_size']
     inputs['picks_left'] = inputs['rounds'] * inputs['league_size']
     print("Before we optimize your draft, are there any categories you wish to punt?\nFG% - FT% - 3P - PTS - REB - AST - STL - BLK - TOV")
@@ -1077,8 +1080,8 @@ if __name__ == '__main__':
     #print(df.avg[df.avg['DRAFTED'] != 0].sort_values(by="DRAFTED"))
     #uncomment following lines to test get and post requests
     posted = '{"league_name":"Numbers Don\'t Lie", "owner_name":"Alexis", "team_name":"Mario Esnu", "mock":"yes", "draft_format":"snake", "league_size":10,"draft_pos":8, "team_size":15, "to_punt":"blk"}'
-    x = requests.post('http://127.0.0.1:5000/api/v1/inputs', json=posted)
-    #app.run(use_reloader=False, port=8000)
+    #x = requests.post('http://127.0.0.1:5000/api/v1/inputs', json=posted)
+    app.run(use_reloader=False, port=8000)
     stop = timeit.default_timer()
     print('Time: ', stop - start)
     
