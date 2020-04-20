@@ -23,7 +23,6 @@ pd.set_option('display.max_rows', None)
 @app.route('/api/v1/players', methods=["GET", "POST"])
 def get_players():
     if request.method=="GET":
-        context = {}
         buff = df.avg.to_json(orient='records')
         results=json.loads(buff)
         #print(df.avg.to_html())
@@ -38,7 +37,9 @@ def get_players():
 
 @app.route('/api/v1/inputs', methods=["POST"])
 def inputs():
-    inputs = get_input()
+    global inputs = {}
+    get_input()
+    setup_draft()
     #print(inputs)
     return 'OK'
 
@@ -49,6 +50,14 @@ def mock_draft():
 @app.route('/api/v1/live', methods=["GET"])
 def live_draft():
     
+
+@app.route('/api/v1/results', methods=["GET"])
+def results():
+    newdf = df.avg.loc[:, ['PLAYER','DRAFTED']]
+    retdf = newdf[newdf['DRAFTED'] != 0].sort_values(by="DRAFTED")
+    buff = retdf.to_json(orient='records')
+    results=json.loads(buff)
+    return flask.jsonify(results)
 
 class DF:
     avg = pd.DataFrame()
@@ -490,8 +499,6 @@ class Benchmarks:
 
 def get_input():
 
-    inputs = {}
-
     inputs['league_name'] = request.form.get('league_name')#input("What is your league name? ")
 
     inputs['owner_name'] = request.form.get('owner_name')#input("What is your name? ")
@@ -540,14 +547,11 @@ def get_input():
         #while isinstance(inputs['keeper_count'], int) == False or inputs['keeper_count'] >= 0 or inputs['keeper_count'] < inputs['team_size']:
             #inputs['keeper_count'] = int(input("Keeper count must be between 0 and the size of your team: "))
 
-    #else:
-    return inputs
-
-def setup_draft(inputs, df):
+def setup_draft():
     inputs['rounds'] = inputs['team_size'] - inputs['keeper_count']
     inputs['picks_left'] = inputs['rounds'] * inputs['league_size']
     print("Before we optimize your draft, are there any categories you wish to punt?\nFG% - FT% - 3P - PTS - REB - AST - STL - BLK - TOV")
-    to_punt = str(input("Enter list of comma separated categories: "))
+    to_punt = request.form.get('to_punt')#str(input("Enter list of comma separated categories: "))
     puntstr = to_punt.replace(" ", "")
     puntstr = puntstr.upper()
     inputs['punt'] = puntstr.split(',')
@@ -555,9 +559,11 @@ def setup_draft(inputs, df):
         
     while len(inputs['punt']) > inputs['cats']//2:
         print("You cannot punt a majority of categories, enter 4 or less.")
-        to_punt = str(input("Enter list of comma separated categories: "))
+        to_punt = request.form.get('to_punt')#str(input("Enter list of comma separated categories: "))
         puntstr = to_punt.replace(" ", "")
-        inputs['punt'] = list(set(puntstr.split(',')))
+        puntstr = puntstr.upper()
+        inputs['punt'] = puntstr.split(',')
+        inputs['punt'] = list(set(inputs['punt']))
 
     if len(inputs['punt']) >= 1:
         if inputs['punt'][0] == '':
@@ -565,11 +571,11 @@ def setup_draft(inputs, df):
         elif "TOV" not in inputs['punt']:
             inputs['punt'] += ["TOV"]
       
-    if inputs['mock'] == "yes":
+    """if inputs['mock'] == "yes":
         mock()
 
     else:
-        live()
+        live()"""
     
 def mock():
     #set mock participants and draft order
