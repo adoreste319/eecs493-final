@@ -1,7 +1,8 @@
 import { Component, OnInit, ElementRef, ViewChild} from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Player, Players } from '../../models/dashhboard';
+import { Player, Players, Inputs } from '../../models/dashhboard';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,6 +20,10 @@ export class DashboardComponent implements OnInit {
   @ViewChild("middleA") middleA: ElementRef;
   @ViewChild("middleB") middleB: ElementRef;
   @ViewChild("middleK") middleK: ElementRef;
+  inputModel: Inputs = new Inputs();
+  draftType: String = "mock";
+  scoringFormat: String = "h2h";
+  draftFormat: String = "snake";
 
 
   constructor(
@@ -30,7 +35,6 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     console.log("Loading page...");
     this.dashboardService.getPlayers().then(res => {
-      console.log(res);
       for (let i = 0; i < res.length; ++i) {
         let player = {};
         player["index"] = i;
@@ -50,7 +54,28 @@ export class DashboardComponent implements OnInit {
         this.players.push(player);
       }
       console.log(this.players);
-      //this.players = res;
+    });
+  }
+
+  getInput(inputForm: NgForm) {
+    if (inputForm.invalid) {
+      console.log("INVALID");
+      return;
+    }
+    let data = {
+      leagueName: this.inputModel.leagueName, 
+      owner: this.inputModel.owner,
+      teamName: this.inputModel.teamName,
+      draftType: this.draftType,
+      scoringFormat: this.scoringFormat,
+      categories: this.inputModel.categories,
+      draftFormat: this.draftFormat,
+      leagueSize: this.inputModel.leagueSize,
+      draftPos: this.inputModel.draftPos,
+      teamSize: this.inputModel.teamSize
+    };
+    this.dashboardService.getInput(data).then(res => {
+      console.log(res);
     });
   }
 

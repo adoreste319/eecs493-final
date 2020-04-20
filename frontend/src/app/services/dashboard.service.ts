@@ -15,4 +15,9 @@ export class DashboardService {
     let url = environment.apiUrl + 'players'
     return this.http.get(url).toPromise();
   }
+
+  getInput(data): Promise<any> {
+    let url = environment.apiUrl + 'inputs'
+    return this.http.post(url, data).toPromise();
+  }
 }

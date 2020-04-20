@@ -28,18 +28,91 @@
         </div>
         <div class="container" *ngIf="myDraftActive">
             <div class="row">
-                <div class="col-12" style="margin-top: 60px;">
-                    <h1 class="text-center">My Draft Page</h1>
-                </div>
+                <form #inputForm="ngForm" autocomplete="off" class="custom-form">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="leagueNew">League Name</label>
+                            <input type="text" class="form-control input-lg" id="leagueNew" name="leagueNew" required [ngClass]="{'error': leagueNew.errors && leagueNew.errors.required && inputForm.submitted}"
+                                #leagueNew="ngModel" [(ngModel)]="inputModel.leagueName">
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="ownerNew">Owner Name</label>
+                            <input type="text" class="form-control input-lg" id="ownerNew" name="ownerNew" required [ngClass]="{'error': ownerNew.errors && ownerNew.errors.required && inputForm.submitted}"
+                                #ownerNew="ngModel" [(ngModel)]="inputModel.owner">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="teamNew">Team Name</label>
+                            <input type="text" class="form-control input-lg" id="teamNew" name="teamNew" required [ngClass]="{'error': teamNew.errors && teamNew.errors.required && inputForm.submitted}"
+                                #teamNew="ngModel" [(ngModel)]="inputModel.teamName">
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="draftType1">Select Draft Type</label>
+                            <select class="form-control input-lg" id="draftType1" name="draftType1" required [ngClass]="{'error': draftType1.errors && draftType1.errors.required && inputForm.submitted}"
+                                #draftType1="ngModel" [(ngModel)]="draftType">
+                                <option value="mock">Mock</option>
+                                <option value="live">Live</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="scoringFormat1">Select Scoring Format</label>
+                            <select class="form-control input-lg" id="scoringFormat1" name="scoringFormat1" required [ngClass]="{'error': scoringFormat1.errors && scoringFormat1.errors.required && inputForm.submitted}"
+                                #scoringFormat1="ngModel" [(ngModel)]="scoringFormat">
+                                <option value="h2h">Head-to-Head</option>
+                                <option value="points">Points</option>
+                                <option value="roto">Roto</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="categoriesNew">Categories (between 8 and 15)</label>
+                            <input type="number" class="form-control input-lg" id="categoriesNew" name="categoriesNew" required [ngClass]="{'error': categoriesNew.errors && categoriesNew.errors.required && inputForm.submitted}"
+                                #categoriesNew="ngModel" [(ngModel)]="inputModel.categories" min="8" max="15">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="draftFormat1">Select Draft Format</label>
+                            <select class="form-control input-lg" id="draftFormat1" name="draftFormat1" required [ngClass]="{'error': draftFormat1.errors && draftFormat1.errors.required && inputForm.submitted}"
+                                #draftFormat1="ngModel" [(ngModel)]="draftFormat">
+                                <option value="snake">Snake</option>
+                                <option value="standard">Standard</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="sizeNew">League Size (between 8 and 20)</label>
+                            <input type="number" class="form-control input-lg" id="sizeNew" name="sizeNew" required [ngClass]="{'error': sizeNew.errors && sizeNew.errors.required && inputForm.submitted}"
+                                #sizeNew="ngModel" [(ngModel)]="inputModel.leagueSize" min="8" max="20">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="draftPosNew">Draft Position</label>
+                            <input type="number" class="form-control input-lg" id="draftPosNew" name="draftPosNew" required [ngClass]="{'error': draftPosNew.errors && draftPosNew.errors.required && inputForm.submitted}"
+                                #draftPosNew="ngModel" [(ngModel)]="inputModel.draftPos" min="1">
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="teamSizeNew">Team Size (between 8 and 20)</label>
+                            <input type="number" class="form-control input-lg" id="teamSizeNew" name="teamSizeNew" required [ngClass]="{'error': teamSizeNew.errors && teamSizeNew.errors.required && inputForm.submitted}"
+                                #teamSizeNew="ngModel" [(ngModel)]="inputModel.teamSize" min="8" max="20">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <button type="button" (click)="getInput(inputForm)" class="btn btn-warning btn-lg submit-input">
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
         <div class="container" *ngIf="draftSheetActive">
             <div class="row">
                 <div class="col-12" style="margin-top: 60px;">
-                    <h1 class="text-center">Draft Sheet Page</h1>
-                </div>
-                <div class="col-12">
-                    <table class="table table-striped table-dark">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th scope="col">INDEX</th>

@@ -18,3 +18,13 @@ export class Player {
 export class Players {
     players: Array<Player>;
 }
+
+export class Inputs {
+    leagueName: String;
+    owner: String;
+    teamName: String;
+    categories: Number;
+    leagueSize: Number;
+    draftPos: Number;
+    teamSize: Number;
+}
