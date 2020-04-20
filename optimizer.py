@@ -37,9 +37,9 @@ def get_players():
 
 @app.route('/api/v1/inputs', methods=["POST"])
 def inputs():
-    print(request.get_json())
+    inputs = json.dumps(request.get_json())
     #get_input()
-    #setup_draft()
+    setup_draft()
     #print(inputs)
     return 'OK'
 
@@ -1075,11 +1075,10 @@ if __name__ == '__main__':
     #print('Answer the following prompts to get started.')
     #print('Thanks for using the Sixth Man Fantasy Hoops Optimizer, good luck!')
     #print(df.avg[df.avg['DRAFTED'] != 0].sort_values(by="DRAFTED"))
+    #uncomment following lines to test get and post requests
+    posted = '{"league_name":"Numbers Don\'t Lie", "owner_name":"Alexis", "team_name":"Mario Esnu", "mock":"yes", "draft_format":"snake", "league_size":10,"draft_pos":8, "team_size":15, "to_punt":"blk"}'
+    x = requests.post('http://127.0.0.1:5000/api/v1/inputs', json=posted)
+    #app.run(use_reloader=False, port=8000)
     stop = timeit.default_timer()
     print('Time: ', stop - start)
-    #uncomment following lines to test get and post requests
-    #posted = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': "yes", 'draft_format': 'snake', 'league_size': 10,'draft_pos': 8, 'team_size': 15, 'to_punt': "blk"}
-    #x = requests.post('http://127.0.0.1:5000/api/v1/inputs', data=posted)
-    #print(x.text)
-    app.run(use_reloader=False, port=8000)
     
