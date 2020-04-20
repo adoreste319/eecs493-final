@@ -20,6 +20,16 @@ app.config["JSON_AS_ASCII"] = False
 pd.set_option('display.max_rows', None)
 #pd.set_option('float_format', '{:f}'.format)
 
+global inputs
+inputs = {}
+global today
+today = datetime.datetime.today()
+global df
+if today.month >= 7:
+    df = DF(today.year)
+else:
+    df = DF(today.year - 1)
+
 @app.route('/api/v1/players', methods=["GET", "POST"])
 def get_players():
     if request.method=="GET":
@@ -38,7 +48,6 @@ def get_players():
 
 @app.route('/api/v1/inputs', methods=["POST"])
 def inputs():
-    global inputs
     inputs = request.get_json()
     setup_draft()
     return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
@@ -665,15 +674,6 @@ def live(index):
     else:
         return False
 
-
-
-global today
-today = datetime.datetime.today()
-global df
-if today.month >= 7:
-    df = DF(today.year)
-else:
-    df = DF(today.year - 1)
     
 if __name__ == '__main__':   
     start = timeit.default_timer()  
