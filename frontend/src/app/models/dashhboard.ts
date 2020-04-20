@@ -27,4 +27,5 @@ export class Inputs {
     leagueSize: Number;
     draftPos: Number;
     teamSize: Number;
+    punt: String;
 }

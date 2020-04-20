@@ -74,7 +74,8 @@ export class DashboardComponent implements OnInit {
       draft_format: this.draftFormat,
       league_size: this.inputModel.leagueSize,
       draft_pos: this.inputModel.draftPos,
-      team_size: this.inputModel.teamSize
+      team_size: this.inputModel.teamSize,
+      to_punt: this.inputModel.punt
     };
     this.dashboardService.getInput(data).then(res => {
       console.log(res);

@@ -98,6 +98,15 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                            <label class="mb-2 mt-2 lb-lg" for="puntNew">Categories To Punt (comma separated)</label>
+                            <input type="text" class="form-control input-lg" id="puntNew" name="puntNew" required [ngClass]="{'error': puntNew.errors && puntNew.errors.required && inputForm.submitted}"
+                                #puntNew="ngModel" [(ngModel)]="inputModel.punt">
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6">
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-12 text-center">
                             <button type="button" (click)="getInput(inputForm)" class="btn btn-warning btn-lg submit-input">
                                 Submit
