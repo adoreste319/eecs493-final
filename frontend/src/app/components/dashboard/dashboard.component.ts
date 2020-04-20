@@ -11,6 +11,7 @@ import { Player, Players, Inputs } from '../../models/dashhboard';
 })
 export class DashboardComponent implements OnInit {
   players: Array<Object> = [];
+  results: Array<Object> = [];
   homeActive: boolean = true;
   resultsActive: boolean = false;
   myDraftActive: boolean = false;
@@ -138,31 +139,35 @@ export class DashboardComponent implements OnInit {
 
 
 
- mouseoverAlexis(){
-  this.middleA.nativeElement.style.opacity = "1";
-}
+  mouseoverAlexis(){
+    this.middleA.nativeElement.style.opacity = "1";
+  }
 
- mouseoutAlexis(){
-  this.middleA.nativeElement.style.opacity = "0";
-}
-
-
- mouseoverBrennan(){
-  this.middleB.nativeElement.style.opacity = "1";
-}
-
- mouseoutBrennan(){
-  this.middleB.nativeElement.style.opacity = "0";
-}
+  mouseoutAlexis(){
+    this.middleA.nativeElement.style.opacity = "0";
+  }
 
 
- mouseoverKeara(){
-  this.middleK.nativeElement.style.opacity = "1";
-}
+  mouseoverBrennan(){
+    this.middleB.nativeElement.style.opacity = "1";
+  }
 
- mouseoutKeara(){
-  this.middleK.nativeElement.style.opacity = "0";
-}
+  mouseoutBrennan(){
+    this.middleB.nativeElement.style.opacity = "0";
+  }
 
+
+  mouseoverKeara(){
+    this.middleK.nativeElement.style.opacity = "1";
+  }
+
+  mouseoutKeara(){
+    this.middleK.nativeElement.style.opacity = "0";
+  }
+
+  removePlayer(player) {
+    this.players[player.index]["drafted"] = 1;
+    this.results.push(player);
+  }
 
 }

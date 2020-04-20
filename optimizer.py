@@ -37,8 +37,9 @@ def get_players():
 
 @app.route('/api/v1/inputs', methods=["POST"])
 def inputs():
-    get_input()
-    setup_draft()
+    print(request.get_json())
+    #get_input()
+    #setup_draft()
     #print(inputs)
     return 'OK'
 
@@ -1080,4 +1081,5 @@ if __name__ == '__main__':
     #posted = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': "yes", 'draft_format': 'snake', 'league_size': 10,'draft_pos': 8, 'team_size': 15, 'to_punt': "blk"}
     #x = requests.post('http://127.0.0.1:5000/api/v1/inputs', data=posted)
     #print(x.text)
+    app.run(use_reloader=False, port=8000)
     
