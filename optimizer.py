@@ -37,18 +37,17 @@ def get_players():
 
 @app.route('/api/v1/inputs', methods=["POST"])
 def inputs():
-    global inputs = {}
     get_input()
     setup_draft()
     #print(inputs)
     return 'OK'
 
-@app.route('/api/v1/mock', methods=["GET"])
-def mock_draft():
+#@app.route('/api/v1/mock', methods=["GET"])
+#def mock_draft():
     
 
-@app.route('/api/v1/live', methods=["GET"])
-def live_draft():
+#@app.route('/api/v1/live', methods=["GET"])
+#def live_draft():
     
 
 @app.route('/api/v1/results', methods=["GET"])
@@ -548,7 +547,7 @@ def get_input():
             #inputs['keeper_count'] = int(input("Keeper count must be between 0 and the size of your team: "))
 
 def setup_draft():
-    inputs['rounds'] = inputs['team_size'] - inputs['keeper_count']
+    inputs['rounds'] = inputs['team_size']
     inputs['picks_left'] = inputs['rounds'] * inputs['league_size']
     print("Before we optimize your draft, are there any categories you wish to punt?\nFG% - FT% - 3P - PTS - REB - AST - STL - BLK - TOV")
     to_punt = request.form.get('to_punt')#str(input("Enter list of comma separated categories: "))
@@ -579,7 +578,8 @@ def setup_draft():
     
 def mock():
     #set mock participants and draft order
-    global league = League(inputs['league_name'])
+    global league
+    league = League(inputs['league_name'])
     comp = 1
     for i in range(inputs['league_size']):
         if i != inputs['draft_pos'] - 1:
@@ -775,7 +775,8 @@ def mock():
         rnd += 1
     
 def live():
-    global league = League(inputs['league_name'])
+    global league
+    league = League(inputs['league_name'])
     adversary = 1
     for i in range(inputs['league_size']):
         if i != inputs['draft_pos'] - 1:
@@ -1060,7 +1061,7 @@ def live():
                         print("Please enter yes or no.")
 
 today = datetime.datetime.today()
-
+inputs = {}
 if today.month >= 7:
     df = DF(today.year)
 else:
@@ -1071,17 +1072,12 @@ if __name__ == '__main__':
        
     print('\nWelcome to the Sixth Man, the fantasy basketball draft optimizer!')
     #print('Answer the following prompts to get started.')
-    #inputs = get_input()
-    #inputs = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': 0,
-    #         'scoring_format': 1, 'cats': 9, 'draft_format': 1, 'league_size': 10,
-    #         'draft_pos': 8, 'team_size': 15, 'keeper': 0, 'keeper_count': 0}
-    #setup_draft(inputs, df)
-    print('Thanks for using the Sixth Man Fantasy Hoops Optimizer, good luck!')
-    print(df.avg[df.avg['DRAFTED'] != 0].sort_values(by="DRAFTED"))
+    #print('Thanks for using the Sixth Man Fantasy Hoops Optimizer, good luck!')
+    #print(df.avg[df.avg['DRAFTED'] != 0].sort_values(by="DRAFTED"))
     stop = timeit.default_timer()
     print('Time: ', stop - start)
-    #posted = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': "yes", 'draft_format': 'snake', 'league_size': 10,'draft_pos': 8, 'team_size': 15}
-    #app.run(port=8000)
-    #x = requests.post('http://127.0.0.1:5000/api/v1/players', data=posted)
+    #uncomment following lines to test get and post requests
+    #posted = {'league_name': 'Numbers Don\'t Lie', 'owner_name': 'Alexis', 'team_name': 'Mario Esnu', 'mock': "yes", 'draft_format': 'snake', 'league_size': 10,'draft_pos': 8, 'team_size': 15, 'to_punt': "blk"}
+    #x = requests.post('http://127.0.0.1:5000/api/v1/inputs', data=posted)
     #print(x.text)
     
