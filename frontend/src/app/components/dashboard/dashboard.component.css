@@ -5,6 +5,7 @@
     background-size: cover !important;  
     background-position: center center!important;;
     background-repeat: no-repeat!important;; 
+    background-attachment: fixed;
     width: 100%;
     min-height: 100%;
     margin: 0;
