@@ -64,16 +64,16 @@ export class DashboardComponent implements OnInit {
       return;
     }
     let data = {
-      leagueName: this.inputModel.leagueName, 
-      owner: this.inputModel.owner,
-      teamName: this.inputModel.teamName,
-      draftType: this.draftType,
-      scoringFormat: this.scoringFormat,
-      categories: this.inputModel.categories,
-      draftFormat: this.draftFormat,
-      leagueSize: this.inputModel.leagueSize,
-      draftPos: this.inputModel.draftPos,
-      teamSize: this.inputModel.teamSize
+      league_name: this.inputModel.leagueName, 
+      owner_name: this.inputModel.owner,
+      team_name: this.inputModel.teamName,
+      draft_type: this.draftType,
+      scoring_format: this.scoringFormat,
+      cats: this.inputModel.categories,
+      draft_format: this.draftFormat,
+      league_size: this.inputModel.leagueSize,
+      draft_pos: this.inputModel.draftPos,
+      team_size: this.inputModel.teamSize
     };
     this.dashboardService.getInput(data).then(res => {
       console.log(res);
