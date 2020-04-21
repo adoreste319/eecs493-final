@@ -178,7 +178,8 @@
                                 <td>{{player.ast}}</td>
                                 <td>{{player.stl}}</td>
                                 <td>{{player.tov}}</td>
-                                <td><button class="btn btn-danger" (click)="removePlayer(player)">Remove Player</button></td>
+                                <td *ngIf="!isManuallySelecting"><button class="btn btn-danger" (click)="removePlayer(player)">Remove Player</button></td>
+                                <td *ngIf="isManuallySelecting"><button class="btn btn-success" (click)="manuallyPickPlayer(player)">Draft Player</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -265,7 +266,7 @@
         <!-- <div class="modal-dialog" role="document"> -->
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="isManuallySelecting = true; modalRef.hide();"><span aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title">It's your turn to draft!</h4>
                 </div>
                 <div class="modal-body">
@@ -273,7 +274,7 @@
                     <p>Would you like to draft this player?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal" (click)="modalRef.hide()">Select Another Player</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" (click)="isManuallySelecting = true; modalRef.hide();">Select Another Player</button>
                     <button type="button" class="btn btn-primary" (click)="pickPlayer()">Draft This Player</button>
                 </div>
             </div><!-- /.modal-content -->

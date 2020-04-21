@@ -34,6 +34,7 @@ export class DashboardComponent implements OnInit {
   draftFormat: String = "snake";
   modalRef: BsModalRef;
   optimumPick: any;
+  isManuallySelecting: boolean = false;
 
 
   constructor(
@@ -120,7 +121,21 @@ export class DashboardComponent implements OnInit {
     }
     this.dashboardService.pickPlayer(data).then(res => {
       console.log(res);
+      this.players[this.optimumPick["index"]]["drafted"] = 1;
+      this.results.push(this.players[this.optimumPick["index"]]);
     });
+  }
+
+  manuallyPickPlayer(player) {
+    let data = {
+      index: player.index
+    }
+    this.dashboardService.pickPlayer(data).then(res => {
+      console.log(res);
+      this.isManuallySelecting = false;
+      this.players[player.index]["drafted"] = 1;
+      this.results.push(player);
+    })
   }
 
   openModal(template: TemplateRef<any>) {
