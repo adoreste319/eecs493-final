@@ -1,8 +1,13 @@
-import { Component, OnInit, ElementRef, ViewChild} from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, TemplateRef} from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Player, Players, Inputs } from '../../models/dashhboard';
+import { ToastrService } from 'ngx-toastr';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { BsModalRef } from 'ngx-bootstrap/modal/bs-modal-ref.service';
+import { Template } from '@angular/compiler/src/render3/r3_ast';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,15 +26,21 @@ export class DashboardComponent implements OnInit {
   @ViewChild("middleA") middleA: ElementRef;
   @ViewChild("middleB") middleB: ElementRef;
   @ViewChild("middleK") middleK: ElementRef;
+  @ViewChild("draftPlayer", {read: TemplateRef}) draftPlayer;
   inputModel: Inputs = new Inputs();
   inputsSet: boolean = false;
   draftType: String = "mock";
   scoringFormat: String = "h2h";
   draftFormat: String = "snake";
+  modalRef: BsModalRef;
+  optimumPick: any;
 
 
   constructor(
     private dashboardService: DashboardService,
+    private toastr: ToastrService,
+    private spinner: NgxSpinnerService,
+    private modalService: BsModalService,
     private router: Router,
     private route: ActivatedRoute
   ) { }
@@ -80,14 +91,40 @@ export class DashboardComponent implements OnInit {
     this.dashboardService.getInput(data).then(res => {
       console.log(res);
       this.inputsSet = true;
+      this.setActive('draftsheet');
       console.log(this.inputsSet);
     });
   }
 
-  startDraft() {
-    this.dashboardService.getDraft().then(res => {
+  simulatePick() {
+    this.spinner.show();
+    this.dashboardService.simulatePick().then(res => {
+      console.log(res);
+      this.spinner.hide();
+      if (res.user) {
+        //ask user if they want to draft player
+        this.optimumPick = this.players[res.index];
+        this.openModal(this.draftPlayer);
+      } else {
+        this.players[res.index]["drafted"] = 1;
+        this.results.push(this.players[res.index]);
+        this.toastr.info("Opponent drafted " + this.players[res.index]["player"] + ".");
+      }
+    });
+  }
+
+  pickPlayer() {
+    this.modalRef.hide();
+    let data = {
+      index: this.optimumPick["index"]
+    }
+    this.dashboardService.pickPlayer(data).then(res => {
       console.log(res);
     });
+  }
+
+  openModal(template: TemplateRef<any>) {
+    this.modalRef = this.modalService.show(template);
   }
 
   getActive(value: string) {

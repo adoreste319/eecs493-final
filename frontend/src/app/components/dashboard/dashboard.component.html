@@ -1,6 +1,6 @@
 <div class="outer">
     <div class="inner">
-        <nav class="navbar navbar-inverse nav-custom" >
+        <nav class="navbar navbar-inverse nav-custom" style="z-index: 2;">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <div class="navbar-brand home" (click)="setActive('home')">The Sixth Man</div>
@@ -119,13 +119,33 @@
         <div class="container" *ngIf="draftSheetActive">
             <div class="row">
                 <div class="col-12" *ngIf="inputsSet" style="margin-top: 60px;">
-                    <h1 class="text-center">Draft Settings</h1>
-                    <button class="btn btn-sucess" (click)="startDraft()">Start Draft</button>
+                    <h1 class="text-center" style="color: white">Draft Settings</h1>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6 text-center draftInfo">
+                            Type: {{draftType && draftType === 'mock' ? 'Mock' : 'Live'}}
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6 text-center draftInfo">
+                            Format: {{draftFormat && draftFormat === 'snake' ? 'Snake' : 'Standard'}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6 text-center draftInfo">
+                            Rounds: {{inputModel.teamSize}}
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6 text-center draftInfo">
+                            Draft Postition: {{inputModel.draftPos}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <button class="btn btn-success btn-lg text-center" (click)="simulatePick()">Simulate Pick</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-12" *ngIf="!inputsSet" style="margin-top: 60px;">
                     <h1 class="text-center">No Inputs Set</h1>
                 </div>
-                <div class="col-12">
+                <div class="col-12" style="margin-top: 10px;">
                     <table class="table table-hover table-striped" style="background-color: grey;">
                         <thead>
                             <tr>
@@ -240,3 +260,23 @@
             </div>
     </div>
 </div>
+<ng-template #draftPlayer>
+    <!-- <div class="modal fade" tabindex="-1" role="dialog"> -->
+        <!-- <div class="modal-dialog" role="document"> -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">It's your turn to draft!</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Your optimum pick is {{optimumPick["player"]}}.</p>
+                    <p>Would you like to draft this player?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" (click)="modalRef.hide()">Select Another Player</button>
+                    <button type="button" class="btn btn-primary" (click)="pickPlayer()">Draft This Player</button>
+                </div>
+            </div><!-- /.modal-content -->
+        <!-- </div>/.modal-dialog -->
+    <!-- </div>/.modal -->
+</ng-template>

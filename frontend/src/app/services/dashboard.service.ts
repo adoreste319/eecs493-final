@@ -21,8 +21,13 @@ export class DashboardService {
     return this.http.post(url, data).toPromise();
   }
 
-  getDraft(): Promise<any> {
+  simulatePick(): Promise<any> {
     let url = environment.apiUrl + 'draft'
     return this.http.get(url).toPromise();
+  }
+
+  pickPlayer(data): Promise<any> {
+    let url = environment.apiUrl + 'draft'
+    return this.http.post(url, data).toPromise();
   }
 }

@@ -216,3 +216,16 @@
     text-align: center;
     margin-top: 20px;
 }
+
+.draftInfo {
+    font-size: 36px;
+    color: white;
+}
+
+.modal {
+    display: block;
+}
+
+.modal-dialog {
+    height: 500px;
+}
