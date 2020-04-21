@@ -569,7 +569,7 @@ def mock():
         pos = league.pick % inputs['league_size']
         if pos == abs((inputs['draft_pos']-1)-inputs['league_size']):
             user = True
-        elif inputs['draft_pos'] == (league.pick % inputs['league_size']) + 1:
+        if pos == 0 and inputs['draft_pos'] == 1:
             user = True
         if pos != 0:
             pos = abs(pos - inputs['league_size'])
@@ -621,19 +621,19 @@ def live(index):
             pos = league.pick % inputs['league_size']
             if pos == abs(inputs['draft_pos']-inputs['league_size']):
                 user = True
-            elif pos == inputs['draft_pos'] - 1:
+            if pos == 0 and inputs['draft_pos'] == 1:
                 user = True
             if pos != 0:
                 pos = abs(pos - inputs['league_size'])
         else:
             pos = league.pick % inputs['league_size']
             if pos == 0:
-                pos = 1
+                pos = inputs['league_size']
+                if inputs['draft_pos'] == inputs['league_size']:
+                    user = True
             if pos == inputs['draft_pos'] - 1:
                 user = True
-            elif pos == abs((inputs['draft_pos'] - 1) - inputs['league_size']):
-                pos = inputs['draft_pos'] - 1
-                user = True
+            pos -= 1
 
     #if draft is not snaked
     else:
@@ -643,7 +643,7 @@ def live(index):
         if pos != 0:
             pos -= 1
 
-    print(user, league.pick)
+    #print(user, league.pick)
     league.players[pos].add(df.avg.iloc[index, :])
     league.pick += 1
     if user:
