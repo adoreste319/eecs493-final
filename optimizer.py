@@ -576,7 +576,7 @@ def mock():
     else:
         pos = (league.pick % inputs['league_size']) - 1
         if pos == -1:
-            pos = 9
+            pos = inputs['league_size'] - 1
         if pos == inputs['draft_pos'] - 1:
             user = True
         
