@@ -173,7 +173,14 @@
     width: 97%;
 }
 
-
+.bio{
+    color:080808;
+    display: table; 
+    margin: 0px auto 0px auto;
+    padding:5px;font-size:20px;
+    background-color: #dcdcdc;
+    border-radius: 8px; 
+}
 
 .container{
     font-family: Montserrat;
