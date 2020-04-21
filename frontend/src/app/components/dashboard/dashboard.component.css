@@ -227,6 +227,7 @@
 .draftInfo {
     font-size: 36px;
     color: white;
+    border-radius: 8px; 
 }
 
 .modal {
