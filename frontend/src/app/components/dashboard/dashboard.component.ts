@@ -21,7 +21,6 @@ export class DashboardComponent implements OnInit {
   resultsActive: boolean = false;
   myDraftActive: boolean = false;
   draftSheetActive: boolean = false;
-  userActive: boolean = false;
   infoActive: boolean = false;
   @ViewChild("middleA") middleA: ElementRef;
   @ViewChild("middleB") middleB: ElementRef;
@@ -113,6 +112,9 @@ export class DashboardComponent implements OnInit {
         this.players[res.index]["drafted"] = 1;
         this.results.push(this.players[res.index]);
         this.toastr.info("Opponent drafted " + this.players[res.index]["player"] + ".");
+        if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
+          this.setActive('results');
+        }
       }
     });
   }
@@ -128,7 +130,9 @@ export class DashboardComponent implements OnInit {
       this.toastr.success("You drafted " + this.optimumPick["player"] + ".");
       this.players[this.optimumPick["index"]]["drafted"] = 1;
       this.results.push(this.players[this.optimumPick["index"]]);
-      if (this.draftType === 'live' && res.user) {
+      if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
+        this.setActive('results');
+      } else if (this.draftType === 'live' && res.user) {
         this.simulatePick();
       }
     });
@@ -145,7 +149,9 @@ export class DashboardComponent implements OnInit {
       this.toastr.success("You drafted " + this.players[player.index]["player"] + ".");
       this.players[player.index]["drafted"] = 1;
       this.results.push(player);
-      if (this.draftType === 'live' && res.user) {
+      if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
+        this.setActive('results');
+      } else if (this.draftType === 'live' && res.user) {
         this.simulatePick();
       }
     });
@@ -161,7 +167,9 @@ export class DashboardComponent implements OnInit {
       this.toastr.info("Opponent drafted " + this.players[player.index]["player"] + ".");
       this.players[player.index]["drafted"] = 1;
       this.results.push(player);
-      if (res.user) {
+      if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
+        this.setActive('results');
+      } else if (res.user) {
         this.simulatePick();
       }
     });
@@ -187,14 +195,12 @@ export class DashboardComponent implements OnInit {
       this.draftSheetActive = false;
       this.resultsActive = false;
       this.homeActive = false;
-      this.userActive = false;
       this.infoActive = false;
     } else if (value === 'draftsheet') {
       this.draftSheetActive = true;
       this.myDraftActive = false;
       this.resultsActive = false;
       this.homeActive = false;
-      this.userActive = false;
       this.infoActive = false;
       if (this.inputsSet) {
         if (this.inputModel.draftPos === 1 && this.draftType === 'live' && this.curPick === 1) {
@@ -206,28 +212,18 @@ export class DashboardComponent implements OnInit {
       this.myDraftActive = false;
       this.draftSheetActive = false;
       this.homeActive = false;
-      this.userActive = false;
       this.infoActive = false;
     } else if (value === 'home') {
       this.homeActive = true;
       this.myDraftActive = false;
       this.draftSheetActive = false;
       this.resultsActive = false;
-      this.userActive = false;
       this.infoActive = false;
-    } else if (value === 'user') {
-      this.userActive = true;
-      this.myDraftActive = false;
-      this.draftSheetActive = false;
-      this.resultsActive = false;
-      this.infoActive = false;
-      this.homeActive = false;
     } else if(value === 'info') {
       this.infoActive = true;
       this.myDraftActive = false;
       this.draftSheetActive = false;
       this.resultsActive = false;
-      this.userActive = false;
       this.homeActive = false;
     }
   }

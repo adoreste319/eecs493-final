@@ -10,9 +10,6 @@
                     <li class="{{getActive('draftsheet')}} navbar-custom" (click)="setActive('draftsheet')">Draft Sheet</li>
                     <li class="{{getActive('results')}} navbar-custom" (click)="setActive('results')">Results</li>
                 </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li class="navbar-custom" (click)="setActive('user')"><span class="glyphicon glyphicon-user"></span></li>
-                </ul>
             </div>
         </nav>
         <div class="landing" *ngIf="homeActive">
@@ -154,7 +151,7 @@
                     </div>
                 </div>
                 <div class="col-12" *ngIf="!inputsSet" style="margin-top: 60px;">
-                    <h1 class="text-center">No Inputs Set</h1>
+                    <h1 class="text-center draftInfo">No Inputs Set</h1>
                 </div>
                 <div class="col-12" style="margin-top: 10px;">
                     <table class="table table-hover table-striped" style="background-color: grey;">
@@ -235,13 +232,6 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-        <div class="container" *ngIf="userActive">
-            <div class="row">
-                <div class="col-12" style="margin-top: 60px;">
-                    <h1 class="text-center">User Page</h1>
                 </div>
             </div>
         </div>
