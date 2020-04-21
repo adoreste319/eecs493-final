@@ -675,8 +675,8 @@ def get_draft():
                 
     if request.method=="POST":
         index = request.get_json()
-        df.avg.loc[index, 'DRAFTED'] = league.pick
-        return json.dumps({'success':True,'user':live(index['index'])}), 200, {'ContentType':'application/json'} 
+        df.avg.loc[index['index'], 'DRAFTED'] = league.pick
+        return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
 
 
 @app.route('/api/v1/inputs', methods=["POST"])
