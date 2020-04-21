@@ -137,6 +137,14 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6 text-center draftInfo">
+                            Current Round: {{getFloor((curPick / inputModel.leagueSize) + 1)}}
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6 text-center draftInfo">
+                            Pick Number: {{curPick}}
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-12 text-center" *ngIf="draftType === 'mock'">
                             <button class="btn btn-success btn-lg text-center" (click)="simulatePick()">Simulate Pick</button>
                         </div>

@@ -36,6 +36,7 @@ export class DashboardComponent implements OnInit {
   optimumPick: any;
   isManuallySelecting: boolean = false;
   aboutToDraft: boolean = false;
+  curPick: number = 1;
 
 
   constructor(
@@ -108,6 +109,7 @@ export class DashboardComponent implements OnInit {
         this.optimumPick = this.players[res.index];
         this.openModal(this.draftPlayer);
       } else {
+        this.curPick += 1;
         this.players[res.index]["drafted"] = 1;
         this.results.push(this.players[res.index]);
         this.toastr.info("Opponent drafted " + this.players[res.index]["player"] + ".");
@@ -122,6 +124,7 @@ export class DashboardComponent implements OnInit {
     }
     this.dashboardService.pickPlayer(data).then(res => {
       console.log(res);
+      this.curPick += 1;
       this.toastr.success("You drafted " + this.optimumPick["player"] + ".");
       this.players[this.optimumPick["index"]]["drafted"] = 1;
       this.results.push(this.players[this.optimumPick["index"]]);
@@ -134,6 +137,7 @@ export class DashboardComponent implements OnInit {
     }
     this.dashboardService.pickPlayer(data).then(res => {
       console.log(res);
+      this.curPick += 1;
       this.isManuallySelecting = false;
       this.toastr.success("You drafted " + this.players[player.index]["player"] + ".");
       this.players[player.index]["drafted"] = 1;
@@ -152,6 +156,8 @@ export class DashboardComponent implements OnInit {
       this.results.push(player);
       if (res.user) {
         this.simulatePick();
+      } else {
+        this.curPick += 1;
       }
     });
   }
@@ -243,6 +249,10 @@ export class DashboardComponent implements OnInit {
 
   mouseoutKeara(){
     this.middleK.nativeElement.style.opacity = "0";
+  }
+
+  getFloor(value) {
+    return Math.floor(value);
   }
 
 }
