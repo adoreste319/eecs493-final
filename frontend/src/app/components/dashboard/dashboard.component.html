@@ -67,7 +67,7 @@
                         <div class="col-md-6 col-lg-6 col-sm-6">
                             <label class="mb-2 mt-2 lb-lg" for="categoriesNew">Categories (between 8 and 15)</label>
                             <input type="number" class="form-control input-lg" id="categoriesNew" name="categoriesNew" required [ngClass]="{'error': categoriesNew.errors && categoriesNew.errors.required && inputForm.submitted}"
-                                #categoriesNew="ngModel" [(ngModel)]="inputModel.categories" min="8" max="15">
+                                #categoriesNew="ngModel" [(ngModel)]="inputModel.categories" min="8" max="15" onkeydown="return false">
                         </div>
                     </div>
                     <div class="row">
@@ -82,19 +82,19 @@
                         <div class="col-md-6 col-lg-6 col-sm-6">
                             <label class="mb-2 mt-2 lb-lg" for="sizeNew">League Size (between 8 and 20)</label>
                             <input type="number" class="form-control input-lg" id="sizeNew" name="sizeNew" required [ngClass]="{'error': sizeNew.errors && sizeNew.errors.required && inputForm.submitted}"
-                                #sizeNew="ngModel" [(ngModel)]="inputModel.leagueSize" min="8" max="20">
+                                #sizeNew="ngModel" [(ngModel)]="inputModel.leagueSize" min="8" max="20" onkeydown="return false">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 col-lg-6 col-sm-6">
                             <label class="mb-2 mt-2 lb-lg" for="draftPosNew">Draft Position</label>
                             <input type="number" class="form-control input-lg" id="draftPosNew" name="draftPosNew" required [ngClass]="{'error': draftPosNew.errors && draftPosNew.errors.required && inputForm.submitted}"
-                                #draftPosNew="ngModel" [(ngModel)]="inputModel.draftPos" min="1">
+                                #draftPosNew="ngModel" [(ngModel)]="inputModel.draftPos" min="1" onkeydown="return false">
                         </div>
                         <div class="col-md-6 col-lg-6 col-sm-6">
                             <label class="mb-2 mt-2 lb-lg" for="teamSizeNew">Team Size (between 8 and 20)</label>
                             <input type="number" class="form-control input-lg" id="teamSizeNew" name="teamSizeNew" required [ngClass]="{'error': teamSizeNew.errors && teamSizeNew.errors.required && inputForm.submitted}"
-                                #teamSizeNew="ngModel" [(ngModel)]="inputModel.teamSize" min="8" max="20">
+                                #teamSizeNew="ngModel" [(ngModel)]="inputModel.teamSize" min="8" max="20" onkeydown="return false">
                         </div>
                     </div>
                     <div class="row">
@@ -137,8 +137,11 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-12 text-center">
+                        <div class="col-12 text-center" *ngIf="draftType === 'mock'">
                             <button class="btn btn-success btn-lg text-center" (click)="simulatePick()">Simulate Pick</button>
+                        </div>
+                        <div class="col-12 text-center" *ngIf="draftType === 'live'">
+                            <h1 class="text-center draftInfo">Remove players below as they are drafted in your live draft.</h1>
                         </div>
                     </div>
                 </div>
@@ -178,7 +181,8 @@
                                 <td>{{player.ast}}</td>
                                 <td>{{player.stl}}</td>
                                 <td>{{player.tov}}</td>
-                                <td *ngIf="!isManuallySelecting"><button class="btn btn-danger" (click)="removePlayer(player)">Remove Player</button></td>
+                                <td *ngIf="!isManuallySelecting && draftType === 'live'"><button class="btn btn-danger" (click)="removePlayer(player)">Remove Player</button></td>
+                                <td *ngIf="!isManuallySelecting && draftType === 'mock'"></td>
                                 <td *ngIf="isManuallySelecting"><button class="btn btn-success" (click)="manuallyPickPlayer(player)">Draft Player</button></td>
                             </tr>
                         </tbody>

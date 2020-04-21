@@ -35,6 +35,7 @@ export class DashboardComponent implements OnInit {
   modalRef: BsModalRef;
   optimumPick: any;
   isManuallySelecting: boolean = false;
+  aboutToDraft: boolean = false;
 
 
   constructor(
@@ -137,7 +138,22 @@ export class DashboardComponent implements OnInit {
       this.toastr.success("You drafted " + this.players[player.index]["player"] + ".");
       this.players[player.index]["drafted"] = 1;
       this.results.push(player);
-    })
+    });
+  }
+
+  removePlayer(player) {
+    let data = {
+      index: player.index
+    }
+    this.dashboardService.pickPlayer(data).then(res => {
+      console.log(res);
+      this.toastr.info("Opponent drafted " + this.players[player.index]["player"] + ".");
+      this.players[player.index]["drafted"] = 1;
+      this.results.push(player);
+      if (res.user) {
+        this.simulatePick();
+      }
+    });
   }
 
   openModal(template: TemplateRef<any>) {
@@ -227,11 +243,6 @@ export class DashboardComponent implements OnInit {
 
   mouseoutKeara(){
     this.middleK.nativeElement.style.opacity = "0";
-  }
-
-  removePlayer(player) {
-    this.players[player.index]["drafted"] = 1;
-    this.results.push(player);
   }
 
 }
