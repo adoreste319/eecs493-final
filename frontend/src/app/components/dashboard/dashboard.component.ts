@@ -121,6 +121,7 @@ export class DashboardComponent implements OnInit {
     }
     this.dashboardService.pickPlayer(data).then(res => {
       console.log(res);
+      this.toastr.success("You drafted " + this.optimumPick["player"] + ".");
       this.players[this.optimumPick["index"]]["drafted"] = 1;
       this.results.push(this.players[this.optimumPick["index"]]);
     });
@@ -133,6 +134,7 @@ export class DashboardComponent implements OnInit {
     this.dashboardService.pickPlayer(data).then(res => {
       console.log(res);
       this.isManuallySelecting = false;
+      this.toastr.success("You drafted " + this.players[player.index]["player"] + ".");
       this.players[player.index]["drafted"] = 1;
       this.results.push(player);
     })
