@@ -128,6 +128,9 @@ export class DashboardComponent implements OnInit {
       this.toastr.success("You drafted " + this.optimumPick["player"] + ".");
       this.players[this.optimumPick["index"]]["drafted"] = 1;
       this.results.push(this.players[this.optimumPick["index"]]);
+      if (this.draftType === 'live' && res.user) {
+        this.simulatePick();
+      }
     });
   }
 
@@ -142,6 +145,9 @@ export class DashboardComponent implements OnInit {
       this.toastr.success("You drafted " + this.players[player.index]["player"] + ".");
       this.players[player.index]["drafted"] = 1;
       this.results.push(player);
+      if (this.draftType === 'live' && res.user) {
+        this.simulatePick();
+      }
     });
   }
 
@@ -151,13 +157,12 @@ export class DashboardComponent implements OnInit {
     }
     this.dashboardService.pickPlayer(data).then(res => {
       console.log(res);
+      this.curPick += 1;
       this.toastr.info("Opponent drafted " + this.players[player.index]["player"] + ".");
       this.players[player.index]["drafted"] = 1;
       this.results.push(player);
       if (res.user) {
         this.simulatePick();
-      } else {
-        this.curPick += 1;
       }
     });
   }
@@ -191,6 +196,11 @@ export class DashboardComponent implements OnInit {
       this.homeActive = false;
       this.userActive = false;
       this.infoActive = false;
+      if (this.inputsSet) {
+        if (this.inputModel.draftPos === 1 && this.draftType === 'live' && this.curPick === 1) {
+          this.simulatePick();
+        }
+      }
     } else if (value === 'results') {
       this.resultsActive = true;
       this.myDraftActive = false;
