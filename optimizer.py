@@ -567,7 +567,7 @@ def mock():
     #if draft is snaked and round is even
     if inputs['draft_format'] == "snake" and rnd % 2 == 0:
         pos = league.pick % inputs['league_size']
-        if pos == inputs['draft_pos']:
+        if pos == abs((inputs['draft_pos']-1)-inputs['league_size']):
             user = True
         if pos != 0:
             pos = abs(pos - inputs['league_size'])
@@ -575,6 +575,8 @@ def mock():
     #if draft is snaked or not and round is odd
     else:
         pos = (league.pick % inputs['league_size']) - 1
+        if pos == -1:
+            pos = 9
         if pos == inputs['draft_pos'] - 1:
             user = True
         
@@ -612,19 +614,32 @@ def live(index):
     rnd = int((league.pick-1)/inputs['league_size']) + 1
     user = False
     #if draft is snaked and round is even
-    if inputs['draft_format'] == "snake" and rnd % 2 == 0:
-        pos = league.pick % inputs['league_size']
-        if pos == inputs['draft_pos']:
-            user = True
-        if pos != 0:
-            pos = abs(pos - inputs['league_size'])
+    if inputs['draft_format'] == "snake":
+        if rnd % 2 == 0:
+            pos = league.pick % inputs['league_size']
+            if pos == abs(inputs['draft_pos']-inputs['league_size']):
+                user = True
+            elif pos == inputs['draft_pos'] - 1:
+                user = True
+            if pos != 0:
+                pos = abs(pos - inputs['league_size'])
+        else:
+            pos = league.pick % inputs['league_size']
+            if pos == 0:
+                pos = 1
+            if pos == inputs['draft_pos'] - 1:
+                user = True
+            elif pos == abs((inputs['draft_pos'] - 1) - inputs['league_size']):
+                pos = inputs['draft_pos'] - 1
+                user = True
 
-    #if draft is snaked or not and round is odd
+    #if draft is not snaked
     else:
-        pos = (league.pick % inputs['league_size']) - 1
+        pos = league.pick % inputs['league_size']
         if pos == inputs['draft_pos'] - 1:
             user = True
-        
+        if pos != 0:
+            pos -= 1
 
     league.players[pos].add(index)
     league.pick += 1            
