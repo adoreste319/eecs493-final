@@ -320,6 +320,15 @@ class Player:
     def remove(self, name):
         self.team.remove(name)
 
+    def dump(self):
+        #print(self.team.roster)
+        return {"draft_pos": self.position,
+                #'punt_cats': json.dumps(self.punt_cats),
+                "team_name": self.team.name,
+                "roster": json.loads(self.team.roster.to_json(orient='records')),
+                "roster_avgs": json.dumps(self.team.avgs)}
+
+
 class League:
     name = ""
     players = []
@@ -718,6 +727,14 @@ def get_results():
     buff = retdf.to_json(orient='records')
     results=json.loads(buff)
     return flask.jsonify(results)
+
+@app.route('/api/v1/teams', methods=["GET"])
+def get_teams():
+    playerdict = {}
+    for player in league.players:
+        playerdict[player.name] = player.dump()
+
+    return json.dumps(playerdict), 200, {'ContentType':'application/json'}
 
     
 if __name__ == '__main__':   
