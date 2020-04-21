@@ -20,4 +20,9 @@ export class DashboardService {
     let url = environment.apiUrl + 'inputs'
     return this.http.post(url, data).toPromise();
   }
+
+  getDraft(): Promise<any> {
+    let url = environment.apiUrl + 'draft'
+    return this.http.get(url).toPromise();
+  }
 }

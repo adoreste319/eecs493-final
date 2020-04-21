@@ -20,46 +20,6 @@ app.config["JSON_AS_ASCII"] = False
 pd.set_option('display.max_rows', None)
 #pd.set_option('float_format', '{:f}'.format)
 
-global inputs
-inputs = {}
-global today
-today = datetime.datetime.today()
-global df
-if today.month >= 7:
-    df = DF(today.year)
-else:
-    df = DF(today.year - 1)
-
-@app.route('/api/v1/players', methods=["GET", "POST"])
-def get_players():
-    if request.method=="GET":
-        if inputs:
-            return mock()
-        
-        else:
-            buff = df.avg.to_json(orient='records')
-            results=json.loads(buff)
-            return flask.jsonify(results)
-                
-    if request.method=="POST":
-        index = request.get_json()
-        df.avg.loc[index, 'DRAFTED'] = league.pick
-        return json.dumps({'success':True,'user':live(index['index'])}), 200, {'ContentType':'application/json'} 
-
-@app.route('/api/v1/inputs', methods=["POST"])
-def inputs():
-    inputs = request.get_json()
-    setup_draft()
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
-
-@app.route('/api/v1/results', methods=["GET"])
-def results():
-    newdf = df.avg.loc[:, ['PLAYER','DRAFTED']]
-    retdf = newdf[newdf['DRAFTED'] != 0].sort_values(by="DRAFTED")
-    buff = retdf.to_json(orient='records')
-    results=json.loads(buff)
-    return flask.jsonify(results)
-
 class DF:
     avg = pd.DataFrame()
     #p36 = pd.DataFrame()
@@ -673,6 +633,51 @@ def live(index):
 
     else:
         return False
+
+global inputs
+inputs = {}
+global today
+today = datetime.datetime.today()
+global df
+if today.month >= 7:
+    df = DF(today.year)
+else:
+    df = DF(today.year - 1)
+
+@app.route('/api/v1/players', methods=["GET", "POST"])
+def get_players():
+    if request.method=="GET":
+        buff = df.avg.to_json(orient='records')
+        results=json.loads(buff)
+        return flask.jsonify(results)
+
+@app.route('/api/v1/draft', methods=["GET", "POST"])
+def get_draft():
+    global inputs
+    if request.method=="GET":
+        if inputs:
+            return mock()
+                
+    if request.method=="POST":
+        index = request.get_json()
+        df.avg.loc[index, 'DRAFTED'] = league.pick
+        return json.dumps({'success':True,'user':live(index['index'])}), 200, {'ContentType':'application/json'} 
+
+
+@app.route('/api/v1/inputs', methods=["POST"])
+def get_inputs():
+    global inputs
+    inputs = request.get_json()
+    setup_draft()
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+
+@app.route('/api/v1/results', methods=["GET"])
+def get_results():
+    newdf = df.avg.loc[:, ['PLAYER','DRAFTED']]
+    retdf = newdf[newdf['DRAFTED'] != 0].sort_values(by="DRAFTED")
+    buff = retdf.to_json(orient='records')
+    results=json.loads(buff)
+    return flask.jsonify(results)
 
     
 if __name__ == '__main__':   

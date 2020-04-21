@@ -84,6 +84,12 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  startDraft() {
+    this.dashboardService.getDraft().then(res => {
+      console.log(res);
+    });
+  }
+
   getActive(value: string) {
     if (value === 'mydraft') {
       return this.myDraftActive ? 'navbar-active' : '';
