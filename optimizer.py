@@ -641,7 +641,7 @@ def live(index):
         if pos != 0:
             pos -= 1
 
-    league.players[pos].add(index)
+    league.players[pos].add(df.avg.iloc[index, :])
     league.pick += 1            
     if user:                        
         return True
