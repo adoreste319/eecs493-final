@@ -675,8 +675,30 @@ def get_draft():
                 
     if request.method=="POST":
         index = request.get_json()
-        df.avg.loc[index, 'DRAFTED'] = league.pick
-        return json.dumps({'success':True,'user':live(index['index'])}), 200, {'ContentType':'application/json'} 
+        if inputs['draft_type'] == 'mock':
+            rnd = int((league.pick-1)/inputs['league_size']) + 1
+            pos = -1
+            #if draft is snaked and round is even
+            if inputs['draft_format'] == "snake" and rnd % 2 == 0:
+                pos = league.pick % inputs['league_size']
+                if pos != 0:
+                    pos = abs(pos - inputs['league_size'])
+
+            #if draft is snaked or not and round is odd
+            else:
+                pos = (league.pick % inputs['league_size']) - 1
+                if pos == -1:
+                    pos = inputs['league_size'] - 1
+            
+            df.avg.loc[index['index'], 'DRAFTED'] = league.pick
+            league.players[pos].add(df.avg.iloc[index['index'], :])
+            league.pick += 1
+            return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+        
+        else:
+            df.avg.loc[index['index'], 'DRAFTED'] = league.pick
+            is_next_pick_user = live(index['index'])
+            return json.dumps({'success':True, 'user':is_next_pick_user}), 200, {'ContentType':'application/json'}
 
 
 @app.route('/api/v1/inputs', methods=["POST"])
