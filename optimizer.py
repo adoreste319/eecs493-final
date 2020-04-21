@@ -569,6 +569,8 @@ def mock():
         pos = league.pick % inputs['league_size']
         if pos == abs((inputs['draft_pos']-1)-inputs['league_size']):
             user = True
+        elif inputs['draft_pos'] == (league.pick % inputs['league_size']) + 1:
+            user = True
         if pos != 0:
             pos = abs(pos - inputs['league_size'])
 
@@ -641,9 +643,10 @@ def live(index):
         if pos != 0:
             pos -= 1
 
+    print(user, league.pick)
     league.players[pos].add(df.avg.iloc[index, :])
-    league.pick += 1            
-    if user:                        
+    league.pick += 1
+    if user:
         return True
 
     else:
