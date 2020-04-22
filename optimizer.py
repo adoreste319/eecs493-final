@@ -321,12 +321,11 @@ class Player:
         self.team.remove(name)
 
     def dump(self):
-        #print(self.team.roster)
         return {"draft_pos": self.position,
                 #'punt_cats': json.dumps(self.punt_cats),
                 "team_name": self.team.name,
-                "roster": json.loads(self.team.roster.to_json(orient='records')),
-                "roster_avgs": json.dumps(self.team.avgs)}
+                "roster": json.loads(self.team.roster.to_json(orient='records'))}
+                #"roster_avgs": json.dumps(self.team.avgs)}
 
 
 class League:
@@ -653,7 +652,7 @@ def live(index):
             pos -= 1
 
     #print(user, league.pick)
-    league.players[pos].add(df.avg.iloc[index, :])
+    league.players[pos].add(df.avg.iloc[[index]])
     league.pick += 1
     if user:
         return True
@@ -703,7 +702,7 @@ def get_draft():
                     pos = inputs['league_size'] - 1
             
             df.avg.loc[index['index'], 'DRAFTED'] = league.pick
-            league.players[pos].add(df.avg.iloc[index['index'], :])
+            league.players[pos].add(df.avg.iloc[[index['index']]])
             league.pick += 1
             return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
         
@@ -732,7 +731,8 @@ def get_results():
 def get_teams():
     playerdict = {}
     for player in league.players:
-        playerdict[player.name] = player.dump()
+        if player.position != inputs['draft_pos']:
+            playerdict[player.name] = player.dump()
 
     return json.dumps(playerdict), 200, {'ContentType':'application/json'}
 
