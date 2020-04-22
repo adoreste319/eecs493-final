@@ -17,6 +17,7 @@ import { Template } from '@angular/compiler/src/render3/r3_ast';
 export class DashboardComponent implements OnInit {
   players: Array<Object> = [];
   results: Array<Object> = [];
+  userTeam: Array<Object> = [];
   homeActive: boolean = true;
   resultsActive: boolean = false;
   myDraftActive: boolean = false;
@@ -36,6 +37,7 @@ export class DashboardComponent implements OnInit {
   isManuallySelecting: boolean = false;
   aboutToDraft: boolean = false;
   curPick: number = 1;
+  showTeams: boolean = false;
 
 
   constructor(
@@ -130,6 +132,7 @@ export class DashboardComponent implements OnInit {
       this.toastr.success("You drafted " + this.optimumPick["player"] + ".");
       this.players[this.optimumPick["index"]]["drafted"] = 1;
       this.results.push(this.players[this.optimumPick["index"]]);
+      this.userTeam.push(this.players[this.optimumPick["index"]]);
       if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
         this.setActive('results');
       } else if (this.draftType === 'live' && res.user) {
@@ -149,6 +152,7 @@ export class DashboardComponent implements OnInit {
       this.toastr.success("You drafted " + this.players[player.index]["player"] + ".");
       this.players[player.index]["drafted"] = 1;
       this.results.push(player);
+      this.userTeam.push(player);
       if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
         this.setActive('results');
       } else if (this.draftType === 'live' && res.user) {
@@ -213,6 +217,9 @@ export class DashboardComponent implements OnInit {
       this.draftSheetActive = false;
       this.homeActive = false;
       this.infoActive = false;
+      this.dashboardService.getTeams().then(res => {
+        console.log(res);
+      });
     } else if (value === 'home') {
       this.homeActive = true;
       this.myDraftActive = false;
@@ -259,6 +266,10 @@ export class DashboardComponent implements OnInit {
 
   getFloor(value) {
     return Math.floor(value);
+  }
+
+  toggleTeams() {
+    this.showTeams = !this.showTeams;
   }
 
 }

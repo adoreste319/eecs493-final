@@ -198,6 +198,78 @@
         <div class="container" *ngIf="resultsActive">
             <div class="row">
                 <div class="col-12" style="margin-top: 60px;">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-6 col-sm-6 text-center draftInfo">
+                            Owner: {{inputModel.owner}}
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-sm-6 text-center draftInfo">
+                            Team Name: {{inputModel.teamName}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <h1 class="text-center draftInfo">Your Team</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" style="margin-top: 10px;">
+                    <table class="table table-hover table-striped" style="background-color: grey;">
+                        <thead>
+                            <tr>
+                                <th scope="col">INDEX</th>
+                                <th scope="col">PLAYER</th>
+                                <th scope="col">POS</th>
+                                <th scope="col">AGE</th>
+                                <th scope="col">FG%</th>
+                                <th scope="col">FT%</th>
+                                <th scope="col">3P</th>
+                                <th scope="col">PTS</th>
+                                <th scope="col">TRB</th>
+                                <th scope="col">AST</th>
+                                <th scope="col">STL</th>
+                                <th scope="col">TOV</th>
+                            </tr>
+                        </thead>
+                        <tbody *ngFor="let player of userTeam">
+                            <tr>
+                                <td>{{player.index}}</td>
+                                <td>{{player.player}}</td>
+                                <td>{{player.pos}}</td>
+                                <td>{{player.age}}</td>
+                                <td>{{player["fg%"]}}</td>
+                                <td>{{player["ft%"]}}</td>
+                                <td>{{player["3P"]}}</td>
+                                <td>{{player.pts}}</td>
+                                <td>{{player.trb}}</td>
+                                <td>{{player.ast}}</td>
+                                <td>{{player.stl}}</td>
+                                <td>{{player.tov}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-12" style="margin-top: 10px;">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <button class="btn btn-default btn-lg text-center" (click)="toggleTeams()">{{showTeams ? 'Hide' : 'Show'}} Opponents</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" style="margin-top: 10px;">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <h1 class="text-center draftInfo">Draft Results</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" *ngIf="inputsSet" style="margin-top: 10px;">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <h1 class="text-center draftInfo">Draft Results</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" style="margin-top: 10px;">
                     <table class="table table-hover table-striped" style="background-color: grey;">
                         <thead>
                             <tr>

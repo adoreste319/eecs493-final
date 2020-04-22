@@ -30,4 +30,9 @@ export class DashboardService {
     let url = environment.apiUrl + 'draft'
     return this.http.post(url, data).toPromise();
   }
+
+  getTeams(): Promise<any> {
+    let url = environment.apiUrl + 'teams'
+    return this.http.get(url).toPromise();
+  }
 }
