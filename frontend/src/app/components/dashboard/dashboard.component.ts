@@ -115,7 +115,7 @@ export class DashboardComponent implements OnInit {
         this.players[res.index]["drafted"] = 1;
         this.results.push(this.players[res.index]);
         this.toastr.info("Opponent drafted " + this.players[res.index]["player"] + ".");
-        if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
+        if (this.curPick === ((this.inputModel.leagueSize * this.inputModel.teamSize) + 1)) {
           this.setActive('results');
         }
       }
@@ -134,7 +134,7 @@ export class DashboardComponent implements OnInit {
       this.players[this.optimumPick["index"]]["drafted"] = 1;
       this.results.push(this.players[this.optimumPick["index"]]);
       this.userTeam.push(this.players[this.optimumPick["index"]]);
-      if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
+      if (this.curPick === ((this.inputModel.leagueSize * this.inputModel.teamSize) + 1)) {
         this.setActive('results');
       } else if (this.draftType === 'live' && res.user) {
         this.simulatePick();
@@ -154,7 +154,7 @@ export class DashboardComponent implements OnInit {
       this.players[player.index]["drafted"] = 1;
       this.results.push(player);
       this.userTeam.push(player);
-      if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
+      if (this.curPick === ((this.inputModel.leagueSize * this.inputModel.teamSize) + 1)) {
         this.setActive('results');
       } else if (this.draftType === 'live' && res.user) {
         this.simulatePick();
@@ -172,7 +172,7 @@ export class DashboardComponent implements OnInit {
       this.toastr.info("Opponent drafted " + this.players[player.index]["player"] + ".");
       this.players[player.index]["drafted"] = 1;
       this.results.push(player);
-      if (this.curPick === (this.inputModel.leagueSize * this.inputModel.teamSize)) {
+      if (this.curPick === ((this.inputModel.leagueSize * this.inputModel.teamSize) + 1)) {
         this.setActive('results');
       } else if (res.user) {
         this.simulatePick();
