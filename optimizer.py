@@ -627,7 +627,7 @@ def live(index):
     if inputs['draft_format'] == "snake":
         if rnd % 2 == 0:
             pos = league.pick % inputs['league_size']
-            if pos == abs(inputs['draft_pos']-inputs['league_size']):
+            if pos == abs(inputs['draft_pos']-inputs['league_size']) and pos != 0:
                 user = True
             if pos == 0 and inputs['draft_pos'] == 1:
                 user = True
@@ -651,7 +651,7 @@ def live(index):
         if pos != 0:
             pos -= 1
 
-    #print(user, league.pick)
+    print(user, league.pick)
     league.players[pos].add(df.avg.iloc[[index]])
     league.pick += 1
     if user:
