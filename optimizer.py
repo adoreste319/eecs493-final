@@ -291,15 +291,18 @@ class Team:
         self.size = size_in
 
     def add(self, row):
-        self.roster = self.roster.append(row, sort=True)
+        self.roster = self.roster.append(row)
         for i in self.avgs.items():
             self.avgs[i[0]] = self.roster[i[0]].mean()
 
     def remove(self, name):
-        index = self.roster[self.roster['PLAYER'] == name].index
-        self.roster = self.roster.drop(index, inplace=True)
-        for i in self.avgs.items():
-            self.avgs[i[0]] = self.roster[i[0]].mean()        
+        idx = self.roster[self.roster['PLAYER'] == name].index[0]
+        self.roster.drop(index=idx, inplace=True)
+        if self.roster is not None:
+            for i in self.avgs.items():
+                self.avgs[i[0]] = self.roster[i[0]].mean()
+        else:
+            self.roster = pd.DataFrame()
 
 class Player:
 
@@ -345,35 +348,35 @@ class Pick:
     viability = { }
     row_num = -1
     adv_row = -1
-    row = pd.DataFrame()
+    row = None
     
     def __init__(self, index, benchmarks, std_devs):
-        self.row = df.avg.iloc[index]
-        self.name = self.row['PLAYER']
+        self.row = df.avg.iloc[[index]]
+        self.name = self.row.at[index, 'PLAYER']
         self.row_num = index
         
         #set viability
-        self.viability["FG%"] = (self.row["FG%"] - benchmarks["FG%"])/std_devs["FG%"]
-        self.viability["FT%"] = (self.row['FT%'] - benchmarks["FT%"])/std_devs["FT%"]
-        self.viability["3P"] = (self.row['3P'] - benchmarks["3P"])/std_devs["3P"]
-        self.viability["PTS"] = (self.row['PTS'] - benchmarks["PTS"])/std_devs["PTS"]
-        self.viability["TRB"] = (self.row['TRB'] - benchmarks["TRB"])/std_devs["TRB"]
-        self.viability["AST"] = (self.row['AST'] - benchmarks["AST"])/std_devs["AST"]
-        self.viability["STL"] = (self.row['STL'] - benchmarks["STL"])/std_devs["STL"]
-        self.viability["BLK"] = (self.row['BLK'] - benchmarks["BLK"])/std_devs["BLK"]
-        self.viability["TOV"] = (self.row['TOV'] - benchmarks["TOV"])/std_devs["TOV"]
-        self.viability["MP"] = (self.row['MP'] - benchmarks["MP"])/std_devs["MP"]
-        self.viability["G"] = (self.row['G'] - benchmarks["G"])/std_devs["G"]
-        self.viability["eFG%"] = (self.row['eFG%'] - benchmarks["eFG%"])/std_devs["eFG%"]
-        self.viability["USG%"] = (df.adv.loc[df.adv.PLAYER == self.name, 'USG%'].values[0] - benchmarks["USG%"])/std_devs["USG%"]
-        self.viability["TS%"] = (df.adv.loc[df.adv.PLAYER == self.name, 'TS%'].values[0] - benchmarks["TS%"])/std_devs["USG%"]
-        self.viability["TRB%"] = (df.adv.loc[df.adv.PLAYER == self.name, 'TRB%'].values[0] - benchmarks["TRB%"])/std_devs["TRB%"]
-        self.viability["AST%"] = (df.adv.loc[df.adv.PLAYER == self.name, 'AST%'].values[0] - benchmarks["AST%"])/std_devs["AST%"]
-        self.viability["STL%"] = (df.adv.loc[df.adv.PLAYER == self.name, 'STL%'].values[0] - benchmarks["STL%"])/std_devs["STL%"]
-        self.viability["BLK%"] = (df.adv.loc[df.adv.PLAYER == self.name, 'BLK%'].values[0] - benchmarks["BLK%"])/std_devs["BLK%"]
-        self.viability["TOV%"] = (df.adv.loc[df.adv.PLAYER == self.name, 'TOV%'].values[0] - benchmarks["TOV%"])/std_devs["TOV%"]
-        self.viability["PER"] = (df.adv.loc[df.adv.PLAYER == self.name, 'PER'].values[0] - benchmarks["PER"])/std_devs["PER"]
-        self.viability["BPM"] = (df.adv.loc[df.adv.PLAYER == self.name, 'BPM'].values[0] - benchmarks["BPM"])/std_devs["BPM"]
+        self.viability["FG%"] = (self.row.at[index, 'FG%'] - benchmarks["FG%"])/std_devs["FG%"]
+        self.viability["FT%"] = (self.row.at[index, 'FT%'] - benchmarks["FT%"])/std_devs["FT%"]
+        self.viability["3P"] = (self.row.at[index, '3P'] - benchmarks["3P"])/std_devs["3P"]
+        self.viability["PTS"] = (self.row.at[index, 'PTS'] - benchmarks["PTS"])/std_devs["PTS"]
+        self.viability["TRB"] = (self.row.at[index, 'TRB'] - benchmarks["TRB"])/std_devs["TRB"]
+        self.viability["AST"] = (self.row.at[index, 'AST'] - benchmarks["AST"])/std_devs["AST"]
+        self.viability["STL"] = (self.row.at[index, 'STL'] - benchmarks["STL"])/std_devs["STL"]
+        self.viability["BLK"] = (self.row.at[index, 'BLK'] - benchmarks["BLK"])/std_devs["BLK"]
+        self.viability["TOV"] = (self.row.at[index, 'TOV'] - benchmarks["TOV"])/std_devs["TOV"]
+        self.viability["MP"] = (self.row.at[index, 'MP'] - benchmarks["MP"])/std_devs["MP"]
+        self.viability["G"] = (self.row.at[index, 'G'] - benchmarks["G"])/std_devs["G"]
+        self.viability["eFG%"] = (self.row.at[index, 'eFG%'] - benchmarks["eFG%"])/std_devs["eFG%"]
+        self.viability["USG%"] = (df.adv.at[df.adv[df.adv['PLAYER'] == self.name].index[0], 'USG%'] - benchmarks["USG%"])/std_devs["USG%"]
+        self.viability["TS%"] = (df.adv.at[df.adv[df.adv['PLAYER'] == self.name].index[0], 'TS%'] - benchmarks["TS%"])/std_devs["USG%"]
+        self.viability["TRB%"] = (df.adv.at[df.adv[df.adv['PLAYER'] == self.name].index[0], 'TRB%'] - benchmarks["TRB%"])/std_devs["TRB%"]
+        self.viability["AST%"] = (df.adv.at[df.adv[df.adv['PLAYER'] == self.name].index[0], 'AST%'] - benchmarks["AST%"])/std_devs["AST%"]
+        self.viability["STL%"] = (df.adv.at[df.adv[df.adv['PLAYER'] == self.name].index[0], 'STL%'] - benchmarks["STL%"])/std_devs["STL%"]
+        self.viability["BLK%"] = (df.adv.at[df.adv[df.adv['PLAYER'] == self.name].index[0], 'BLK%'] - benchmarks["BLK%"])/std_devs["BLK%"]
+        self.viability["TOV%"] = (df.adv.at[df.adv[df.adv['PLAYER'] == self.name].index[0], 'TOV%'] - benchmarks["TOV%"])/std_devs["TOV%"]
+        self.viability["PER"] = (df.adv.at[df.adv[df.adv['PLAYER'] == self.name].index[0], 'PER'] - benchmarks["PER"])/std_devs["PER"]
+        self.viability["BPM"] = (df.adv.at[df.adv[df.adv['PLAYER'] == self.name].index[0], 'BPM'] - benchmarks["BPM"])/std_devs["BPM"]
         
     #returns true if self > pick
     def compare(self, pick, league, index):
@@ -416,6 +419,7 @@ class Pick:
                         team_count += 1
                     plus_count = 0
 
+        league.players[index].remove(self.name)
         if team_count > compared//2:
             return True
         else:
@@ -526,14 +530,6 @@ def setup_draft():
     inputs['to_punt'] = inputs['to_punt'].upper()
     inputs['to_punt'] = inputs['to_punt'].split(',')
     inputs['to_punt'] = list(set(inputs['to_punt']))
-        
-    """while len(inputs['to_punt']) > inputs['cats']//2:
-        print("You cannot punt a majority of categories, enter 4 or less.")
-        to_punt = request.form.get('to_punt')#str(input("Enter list of comma separated categories: "))
-        puntstr = to_punt.replace(" ", "")
-        puntstr = puntstr.upper()
-        inputs['punt'] = puntstr.split(',')
-        inputs['punt'] = list(set(inputs['punt']))"""
 
     if len(inputs['to_punt']) >= 1:
         if inputs['to_punt'][0] == '':
@@ -608,12 +604,13 @@ def mock():
                 elif new_comp[0]:
                     to_pick = other_pick
                     comparison = new_comp
-                
+
+    print(user, league.pick)           
     if user:
         return json.dumps({'index':to_pick.row_num,'user':True}), 200, {'ContentType':'application/json'}
     
     else:
-        df.avg.loc[df.avg['PLAYER']==to_pick.name, 'DRAFTED'] = league.pick
+        df.avg.at[df.avg[df.avg['PLAYER']==to_pick.name].index[0], 'DRAFTED'] = league.pick
         league.players[pos].add(to_pick.row)
         league.pick += 1
         return json.dumps({'index':to_pick.row_num,'user':False}), 200, {'ContentType':'application/json'}
