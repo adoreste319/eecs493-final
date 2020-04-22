@@ -157,7 +157,6 @@
                     <table class="table table-hover table-striped" style="background-color: grey;">
                         <thead>
                             <tr>
-                                <th scope="col">INDEX</th>
                                 <th scope="col">PLAYER</th>
                                 <th scope="col">POS</th>
                                 <th scope="col">AGE</th>
@@ -174,7 +173,6 @@
                         </thead>
                         <tbody *ngFor="let player of players">
                             <tr *ngIf="player.drafted === 0">
-                                <td>{{player.index}}</td>
                                 <td>{{player.player}}</td>
                                 <td>{{player.pos}}</td>
                                 <td>{{player.age}}</td>
@@ -216,7 +214,6 @@
                     <table class="table table-hover table-striped" style="background-color: grey;">
                         <thead>
                             <tr>
-                                <th scope="col">INDEX</th>
                                 <th scope="col">PLAYER</th>
                                 <th scope="col">POS</th>
                                 <th scope="col">AGE</th>
@@ -232,7 +229,6 @@
                         </thead>
                         <tbody *ngFor="let player of userTeam">
                             <tr>
-                                <td>{{player.index}}</td>
                                 <td>{{player.player}}</td>
                                 <td>{{player.pos}}</td>
                                 <td>{{player.age}}</td>
@@ -255,10 +251,44 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12" style="margin-top: 10px;">
-                    <div class="row">
+                <div class="col-12" *ngIf="showTeams">
+                    <div class="row" *ngFor="let team of teams">
                         <div class="col-12 text-center">
-                            <h1 class="text-center draftInfo">Draft Results</h1>
+                            <h1 class="text-center draftInfo">{{team.team_name}}</h1>
+                        </div>
+                        <div class="col-12" style="margin-top: 10px;">
+                            <table class="table table-hover table-striped" style="background-color: grey;">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">PLAYER</th>
+                                        <th scope="col">POS</th>
+                                        <th scope="col">AGE</th>
+                                        <th scope="col">FG%</th>
+                                        <th scope="col">FT%</th>
+                                        <th scope="col">3P</th>
+                                        <th scope="col">PTS</th>
+                                        <th scope="col">TRB</th>
+                                        <th scope="col">AST</th>
+                                        <th scope="col">STL</th>
+                                        <th scope="col">TOV</th>
+                                    </tr>
+                                </thead>
+                                <tbody *ngFor="let player of team.roster">
+                                    <tr>
+                                        <td>{{player.PLAYER}}</td>
+                                        <td>{{player.POS}}</td>
+                                        <td>{{player.AGE}}</td>
+                                        <td>{{player["FG%"]}}</td>
+                                        <td>{{player["FT%"]}}</td>
+                                        <td>{{player["3P"]}}</td>
+                                        <td>{{player.PTS}}</td>
+                                        <td>{{player.TRB}}</td>
+                                        <td>{{player.AST}}</td>
+                                        <td>{{player.STL}}</td>
+                                        <td>{{player.TOV}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -273,7 +303,6 @@
                     <table class="table table-hover table-striped" style="background-color: grey;">
                         <thead>
                             <tr>
-                                <th scope="col">INDEX</th>
                                 <th scope="col">PLAYER</th>
                                 <th scope="col">POS</th>
                                 <th scope="col">AGE</th>
@@ -289,7 +318,6 @@
                         </thead>
                         <tbody *ngFor="let player of results">
                             <tr>
-                                <td>{{player.index}}</td>
                                 <td>{{player.player}}</td>
                                 <td>{{player.pos}}</td>
                                 <td>{{player.age}}</td>

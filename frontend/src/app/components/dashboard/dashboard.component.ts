@@ -18,6 +18,7 @@ export class DashboardComponent implements OnInit {
   players: Array<Object> = [];
   results: Array<Object> = [];
   userTeam: Array<Object> = [];
+  teams: Array<Object> = [];
   homeActive: boolean = true;
   resultsActive: boolean = false;
   myDraftActive: boolean = false;
@@ -212,6 +213,7 @@ export class DashboardComponent implements OnInit {
         }
       }
     } else if (value === 'results') {
+      this.teams = [];
       this.resultsActive = true;
       this.myDraftActive = false;
       this.draftSheetActive = false;
@@ -219,6 +221,10 @@ export class DashboardComponent implements OnInit {
       this.infoActive = false;
       this.dashboardService.getTeams().then(res => {
         console.log(res);
+        for(value in res) {
+          this.teams.push(res[value]);
+        }
+        console.log(this.teams);
       });
     } else if (value === 'home') {
       this.homeActive = true;
